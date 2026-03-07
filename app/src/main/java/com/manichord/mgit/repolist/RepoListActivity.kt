@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.compose.setContent
@@ -125,7 +126,13 @@ class RepoListActivity : SheimiFragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        checkAndRequestRequiredPermissions(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            if (!com.manichord.mgit.permissions.PermissionsHelper.isExternalStorageManager()) {
+                viewModel.setShowPermissionDialog(true)
+            }
+        } else {
+            checkAndRequestRequiredPermissions(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        }
     }
 
     private fun initUpdatedSSL() {

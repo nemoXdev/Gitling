@@ -1,6 +1,6 @@
 package me.sheimi.android.activities;
 
-import android.app.AlertDialog;
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -188,15 +188,15 @@ public class SheimiFragmentActivity extends AppCompatActivity {
     public void showMessageDialog(int title, String msg, int positiveBtn,
             int negativeBtn, DialogInterface.OnClickListener positiveListener,
             DialogInterface.OnClickListener negativeListener) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title).setMessage(msg)
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(title).setMessage(msg)
                 .setPositiveButton(positiveBtn, positiveListener)
                 .setNegativeButton(negativeBtn, negativeListener).show();
     }
 
     public void showMessageDialog(int title, String msg) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title).setMessage(msg)
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(title).setMessage(msg)
                 .setPositiveButton(R.string.label_ok, new DummyDialogListener()).show();
     }
 
@@ -208,24 +208,24 @@ public class SheimiFragmentActivity extends AppCompatActivity {
 
     public void showOptionsDialog(int title, CharSequence[] option_values,
             final onOptionDialogClicked[] option_listeners) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle(title);
-        builder.setItems(option_values, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                option_listeners[which].onClicked();
-            }
-        }).create().show();
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(title)
+                .setItems(option_values, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        option_listeners[which].onClicked();
+                    }
+                }).create().show();
     }
 
     public void showEditTextDialog(int title, int hint, int positiveBtn,
             final OnEditTextDialogClicked positiveListener) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
         View layout = inflater.inflate(R.layout.dialog_edit_text, null);
         final EditText editText = (EditText) layout.findViewById(R.id.editText);
         editText.setHint(hint);
-        builder.setTitle(title)
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(title)
                 .setView(layout)
                 .setPositiveButton(positiveBtn,
                         new DialogInterface.OnClickListener() {
@@ -262,7 +262,6 @@ public class SheimiFragmentActivity extends AppCompatActivity {
 
     private void promptForPasswordInner(
             final OnPasswordEntered onPasswordEntered, String errorInfo) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
         LayoutInflater inflater = getLayoutInflater();
         View layout = inflater.inflate(R.layout.dialog_prompt_for_password,
                 null);
@@ -273,7 +272,8 @@ public class SheimiFragmentActivity extends AppCompatActivity {
         if (errorInfo == null) {
             errorInfo = getString(R.string.dialog_prompt_for_password_title);
         }
-        builder.setTitle(errorInfo)
+        new com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+                .setTitle(errorInfo)
                 .setView(layout)
                 .setPositiveButton(R.string.label_done,
                         new DialogInterface.OnClickListener() {

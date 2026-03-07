@@ -17,6 +17,9 @@ class RepoListViewModel(application: Application) : AndroidViewModel(application
     private val _repoList = MutableStateFlow<List<Repo>>(emptyList())
     val repoList: StateFlow<List<Repo>> = _repoList.asStateFlow()
 
+    private val _showPermissionDialog = MutableStateFlow(false)
+    val showPermissionDialog: StateFlow<Boolean> = _showPermissionDialog.asStateFlow()
+
     init {
         RepoDbManager.registerDbObserver(RepoContract.RepoEntry.TABLE_NAME, this)
         refreshRepoList()
@@ -30,6 +33,10 @@ class RepoListViewModel(application: Application) : AndroidViewModel(application
             cursor.close()
             _repoList.value = repos
         }
+    }
+
+    fun setShowPermissionDialog(show: Boolean) {
+        _showPermissionDialog.value = show
     }
 
     override fun nofityChanged() {
