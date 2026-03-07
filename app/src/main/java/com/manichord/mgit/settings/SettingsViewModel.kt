@@ -24,6 +24,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _gitUserEmail = MutableLiveData(prefsHelper.getUserEmail() ?: "")
     val gitUserEmail: LiveData<String> = _gitUserEmail
 
+    private val _gitHubClientId = MutableLiveData(prefsHelper.getGitHubOAuthClientId() ?: "")
+    val gitHubClientId: LiveData<String> = _gitHubClientId
+
+    private val _gitHubClientSecret = MutableLiveData(prefsHelper.getGitHubOAuthClientSecret() ?: "")
+    val gitHubClientSecret: LiveData<String> = _gitHubClientSecret
+
     private val _useGravatar = MutableLiveData(prefsHelper.useGravatar())
     val useGravatar: LiveData<Boolean> = _useGravatar
 
@@ -70,6 +76,16 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun setGitUserEmail(email: String) {
         prefsHelper.setUserEmail(email)
         _gitUserEmail.value = email
+    }
+
+    fun setGitHubClientId(clientId: String) {
+        prefsHelper.setGitHubOAuthClientId(clientId)
+        _gitHubClientId.value = clientId
+    }
+
+    fun setGitHubClientSecret(clientSecret: String) {
+        prefsHelper.setGitHubOAuthClientSecret(clientSecret)
+        _gitHubClientSecret.value = clientSecret
     }
 
     fun setUseGravatar(use: Boolean) {

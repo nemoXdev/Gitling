@@ -18,7 +18,8 @@ import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import android.content.Context;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,6 +27,10 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import androidx.core.content.ContextCompat;
 
@@ -43,54 +48,52 @@ public class CommitsListAdapter extends BaseAdapter {
     private ArrayList<Integer> mFiltered;
     private Context mContext;
     private String mFile;
-    private BackgroundUpdate mUpdate;
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private Future<?> mFilterFuture;
     private int mPosted;
     private Object mProgressLock = new Object();
     private boolean mIsIncomplete;
     private int mProgressCursor;
     private long mPostAtTime;
 
-    private class BackgroundUpdate extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... params) {
-            int i;
-            for (i = mProgressCursor; i < mAll.size(); i++) {
+    private void startFilteringWorker() {
+        mFilterFuture = mExecutor.submit(() -> {
+            for (int i = mProgressCursor; i < mAll.size(); i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
                 if (mFiltered.size() != mPosted && System.nanoTime() > mPostAtTime) {
                     synchronized (mProgressLock) {
                         mProgressCursor = i;
                         mPosted = mFiltered.size();
-                        return null;
                     }
+                    postUpdate();
+                    return;
                 }
-                if (isCancelled()) {
-                    return null;
-                }
-                if (isAccepted(mAll.get(i)))
+                if (isAccepted(mAll.get(i))) {
                     mFiltered.add(i);
+                }
             }
             synchronized (mProgressLock) {
                 mPosted = mFiltered.size();
                 mIsIncomplete = false;
             }
-            return null;
-        }
+            postUpdate();
+        });
+    }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            if (isCancelled()) {
-                return;
-            }
+    private void postUpdate() {
+        mMainHandler.post(() -> {
             synchronized (mProgressLock) {
                 notifyDataSetChanged();
                 if (mIsIncomplete) {
                     // Updates after 1 s
-                    mPostAtTime = System.nanoTime() + 1000000000;
-                    mUpdate = new BackgroundUpdate();
-                    mUpdate.execute();
+                    mPostAtTime = System.nanoTime() + 1_000_000_000;
+                    startFilteringWorker();
                 }
             }
-        }
+        });
     }
 
     public CommitsListAdapter(Context context, Set<Integer> chosenItems,
@@ -129,23 +132,24 @@ public class CommitsListAdapter extends BaseAdapter {
 
     private void stopFiltering() {
         try {
-            mUpdate.cancel(true);
-            mUpdate = null;
-        } catch (Exception e) {
+            if (mFilterFuture != null) {
+                mFilterFuture.cancel(true);
+                mFilterFuture = null;
+            }
+        } catch (Exception ignored) {
         }
     }
 
     private void doFiltering() {
         mFiltered = null;
         if (mFilter != null) {
-            mUpdate = new BackgroundUpdate();
             mPosted = 0;
             mIsIncomplete = true;
             mFiltered = new ArrayList<>();
             mProgressCursor = 0;
             // Show first result after 100 ms
             mPostAtTime = System.nanoTime() + 100000000;
-            mUpdate.execute();
+            startFilteringWorker();
         } else {
             notifyDataSetChanged();
         }

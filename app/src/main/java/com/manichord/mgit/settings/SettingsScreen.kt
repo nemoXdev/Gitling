@@ -30,6 +30,8 @@ fun SettingsScreen(
     val useEnglish by viewModel.useEnglish.observeAsState(false)
     val gitUserName by viewModel.gitUserName.observeAsState("")
     val gitUserEmail by viewModel.gitUserEmail.observeAsState("")
+    val gitHubClientId by viewModel.gitHubClientId.observeAsState("")
+    val gitHubClientSecret by viewModel.gitHubClientSecret.observeAsState("")
     val useGravatar by viewModel.useGravatar.observeAsState(true)
 
     Scaffold(
@@ -89,6 +91,20 @@ fun SettingsScreen(
                 value = gitUserEmail,
                 onValueChange = { viewModel.setGitUserEmail(it) },
                 icon = Icons.Default.Email
+            )
+
+            SettingsEditTextItem(
+                title = stringResource(R.string.preference_github_client_id),
+                value = gitHubClientId,
+                onValueChange = { viewModel.setGitHubClientId(it) },
+                icon = Icons.Default.Code
+            )
+
+            SettingsEditTextItem(
+                title = stringResource(R.string.preference_github_client_secret),
+                value = gitHubClientSecret,
+                onValueChange = { viewModel.setGitHubClientSecret(it) },
+                icon = Icons.Default.Key
             )
 
             HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))

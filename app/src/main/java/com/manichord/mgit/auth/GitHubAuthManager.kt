@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import com.manichord.mgit.models.Account
 import com.manichord.mgit.models.AccountType
+import me.sheimi.sgit.preference.PreferenceHelper
 import org.json.JSONObject
 import timber.log.Timber
 import java.io.OutputStreamWriter
@@ -15,19 +16,22 @@ import java.util.Scanner
 class GitHubAuthManager(private val context: Context, private val accountManager: AccountManager) {
 
     companion object {
-        private const val CLIENT_ID = "YOUR_CLIENT_ID" // User will need to replace this or we use a placeholder
-        private const val CLIENT_SECRET = "YOUR_CLIENT_SECRET"
         private const val REDIRECT_URI = "mgit://github-auth"
         private const val AUTH_URL = "https://github.com/login/oauth/authorize"
         private const val TOKEN_URL = "https://github.com/login/oauth/access_token"
         private const val API_URL = "https://api.github.com"
     }
 
+    private val prefs = PreferenceHelper(context)
+
     fun launchAuth(context: Context) {
-        if (CLIENT_ID == "YOUR_CLIENT_ID" || CLIENT_SECRET == "YOUR_CLIENT_SECRET") {
+        val clientId = prefs.getGitHubOAuthClientId()
+        val clientSecret = prefs.getGitHubOAuthClientSecret()
+
+        if (clientId.isBlank() || clientSecret.isBlank()) {
             android.widget.Toast.makeText(
                 context,
-                "GitHub OAuth is not configured. Set CLIENT_ID/CLIENT_SECRET in GitHubAuthManager.",
+                "GitHub OAuth is not configured. Please set Client ID and Secret in Settings.",
                 android.widget.Toast.LENGTH_LONG
             ).show()
             return
@@ -35,7 +39,7 @@ class GitHubAuthManager(private val context: Context, private val accountManager
 
         val uri = Uri.parse(AUTH_URL)
             .buildUpon()
-            .appendQueryParameter("client_id", CLIENT_ID)
+            .appendQueryParameter("client_id", clientId)
             .appendQueryParameter("redirect_uri", REDIRECT_URI)
             .appendQueryParameter("scope", "repo,user")
             .build()
@@ -92,13 +96,16 @@ class GitHubAuthManager(private val context: Context, private val accountManager
     }
 
     private fun fetchToken(code: String): String? {
+        val clientId = prefs.getGitHubOAuthClientId()
+        val clientSecret = prefs.getGitHubOAuthClientSecret()
+
         val url = URL(TOKEN_URL)
         val conn = url.openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Accept", "application/json")
         conn.doOutput = true
 
-        val body = "client_id=$CLIENT_ID&client_secret=$CLIENT_SECRET&code=$code&redirect_uri=$REDIRECT_URI"
+        val body = "client_id=$clientId&client_secret=$clientSecret&code=$code&redirect_uri=$REDIRECT_URI"
         OutputStreamWriter(conn.outputStream).use { it.write(body) }
 
         if (conn.responseCode == 200) {
