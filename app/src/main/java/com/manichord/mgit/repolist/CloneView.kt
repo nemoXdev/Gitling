@@ -15,6 +15,8 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.manichord.mgit.clone.CloneViewModel
 import me.sheimi.sgit.R
 
@@ -34,6 +36,13 @@ fun CloneView(
 
     val remoteUrlError by viewModel.remoteUrlError.observeAsState()
     val localRepoNameError by viewModel.localRepoNameError.observeAsState()
+
+    val cloneLocation by viewModel.cloneLocation.observeAsState("")
+    val folderPickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()
+    ) { uri: Uri? ->
+        uri?.let { viewModel.cloneLocation.value = it.toString() }
+    }
 
     Column(
         modifier = modifier
@@ -83,6 +92,17 @@ fun CloneView(
             supportingText = {
                 if (!localRepoNameError.isNullOrEmpty()) {
                     Text(text = localRepoNameError!!)
+                } else {
+                    Text(text = "Cloning to: $cloneLocation/$localRepoName")
+                }
+            },
+            trailingIcon = {
+                IconButton(onClick = { folderPickerLauncher.launch(null) }) {
+                    Icon(
+                        imageVector = Icons.Default.FolderOpen,
+                        contentDescription = "Change Parent Folder",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
                 }
             },
             keyboardOptions = KeyboardOptions(
@@ -90,31 +110,6 @@ fun CloneView(
             ),
             singleLine = true,
             shape = MaterialTheme.shapes.medium
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // New Folder Picker Section
-        val folderPickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-            androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()
-        ) { uri: Uri? ->
-            uri?.let { viewModel.cloneLocation.value = it.toString() }
-        }
-
-        val cloneLocation by viewModel.cloneLocation.observeAsState("")
-
-        OutlinedTextField(
-            value = cloneLocation,
-            onValueChange = { viewModel.cloneLocation.value = it },
-            label = { Text("Clone Location") },
-            placeholder = { Text("Default storage") },
-            modifier = Modifier.fillMaxWidth(),
-            trailingIcon = {
-                IconButton(onClick = { folderPickerLauncher.launch(null) }) {
-                    Icon(Icons.Default.FolderOpen, contentDescription = "Browse")
-                }
-            },
-            shape = MaterialTheme.shapes.medium,
-            readOnly = true // User should use the browse button
         )
         Spacer(modifier = Modifier.height(16.dp))
 

@@ -8,6 +8,8 @@ import com.manichord.mgit.branchchooser.BranchChooserScreen
 import com.manichord.mgit.branchchooser.BranchChooserViewModel
 import com.manichord.mgit.ui.theme.AppTheme
 import me.sheimi.android.activities.SheimiFragmentActivity
+import me.sheimi.android.utils.BasicFunctions
+import me.sheimi.android.utils.Profile
 import me.sheimi.sgit.R
 import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.dialogs.RenameBranchDialog
@@ -18,11 +20,11 @@ import android.widget.Toast
 
 class BranchChooserActivity : SheimiFragmentActivity() {
 
-    override fun setTheme() {
-        if (me.sheimi.android.utils.BasicFunctions.isDarkTheme()) {
-            setTheme(R.style.DarkAppTheme_NoActionBar)
+    override fun getThemeResource(): Int {
+        return if (Profile.getTheme(this) == 1) {
+            R.style.DarkAppTheme_NoActionBar
         } else {
-            setTheme(R.style.AppTheme_NoActionBar)
+            R.style.AppTheme_NoActionBar
         }
     }
 

@@ -16,6 +16,8 @@ import com.manichord.mgit.repodetail.RepoDetailScreen
 import com.manichord.mgit.repodetail.RepoDetailViewModel
 import com.manichord.mgit.ui.theme.AppTheme
 import me.sheimi.android.activities.SheimiFragmentActivity
+import me.sheimi.android.utils.BasicFunctions
+import me.sheimi.android.utils.Profile
 import me.sheimi.sgit.R
 import me.sheimi.sgit.activities.delegate.RepoOperationDelegate
 import me.sheimi.sgit.database.models.Repo
@@ -27,11 +29,11 @@ import me.sheimi.sgit.repo.tasks.SheimiAsyncTask.AsyncTaskCallback
 
 class RepoDetailActivity : SheimiFragmentActivity() {
 
-    override fun setTheme() {
-        if (me.sheimi.android.utils.BasicFunctions.isDarkTheme()) {
-            setTheme(R.style.DarkAppTheme_NoActionBar)
+    override fun getThemeResource(): Int {
+        return if (Profile.getTheme(this) == 1) {
+            R.style.DarkAppTheme_NoActionBar
         } else {
-            setTheme(R.style.AppTheme_NoActionBar)
+            R.style.AppTheme_NoActionBar
         }
     }
 

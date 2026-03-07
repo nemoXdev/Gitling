@@ -48,11 +48,19 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
             Timber.d("CLONE REPO %s %s [%b]", localRepoName.value, remoteUrl, cloneRecursively)
             // Use custom location if provided
             val location = cloneLocation.value ?: ""
-            val repo = if (location.isNotEmpty()) {
-                Repo.createRepo(Repo.EXTERNAL_PREFIX + location + "/" + localRepoName.value, remoteUrl, "")
+            val repoName = localRepoName.value ?: ""
+
+            // Generate the final path
+            // If location is the default root, we can just use the name
+            val prefsHelper = (getApplication() as MGitApplication).prefenceHelper!!
+            val defaultRoot = prefsHelper.repoRoot?.absolutePath ?: ""
+
+            val repo = if (location.isNotEmpty() && location != defaultRoot) {
+                Repo.createRepo(Repo.EXTERNAL_PREFIX + location + "/" + repoName, remoteUrl, "")
             } else {
-                Repo.createRepo(localRepoName.value, remoteUrl, "")
+                Repo.createRepo(repoName, remoteUrl, "")
             }
+
             val task = CloneTask(repo, cloneRecursively, "", null)
             task.executeTask()
             remoteUrl = ""

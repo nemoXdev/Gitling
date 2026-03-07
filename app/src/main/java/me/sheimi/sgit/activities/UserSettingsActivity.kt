@@ -10,6 +10,8 @@ import com.manichord.mgit.settings.SettingsScreen
 import com.manichord.mgit.settings.SettingsViewModel
 import com.manichord.mgit.ui.theme.AppTheme
 import me.sheimi.android.activities.SheimiFragmentActivity
+import me.sheimi.android.utils.BasicFunctions
+import me.sheimi.android.utils.Profile
 import me.sheimi.android.utils.FsUtils
 import me.sheimi.sgit.R
 import me.sheimi.sgit.activities.explorer.PrivateKeyManageActivity
@@ -17,11 +19,11 @@ import java.io.File
 
 class UserSettingsActivity : SheimiFragmentActivity() {
 
-    override fun setTheme() {
-        if (me.sheimi.android.utils.BasicFunctions.isDarkTheme()) {
-            setTheme(R.style.DarkAppTheme_NoActionBar)
+    override fun getThemeResource(): Int {
+        return if (Profile.getTheme(this) == 1) {
+            R.style.DarkAppTheme_NoActionBar
         } else {
-            setTheme(R.style.AppTheme_NoActionBar)
+            R.style.AppTheme_NoActionBar
         }
     }
 

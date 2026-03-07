@@ -22,6 +22,8 @@ import me.sheimi.sgit.database.RepoDbManager
 import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.repo.tasks.repo.CloneTask
 import me.sheimi.sgit.ssh.PrivateKeyUtils
+import me.sheimi.android.utils.BasicFunctions
+import me.sheimi.android.utils.Profile
 import timber.log.Timber
 import java.io.File
 import java.net.MalformedURLException
@@ -29,11 +31,11 @@ import java.net.URL
 
 class RepoListActivity : SheimiFragmentActivity() {
 
-    override fun setTheme() {
-        if (me.sheimi.android.utils.BasicFunctions.isDarkTheme()) {
-            setTheme(R.style.DarkAppTheme_NoActionBar)
+    override fun getThemeResource(): Int {
+        return if (Profile.getTheme(this) == 1) {
+            R.style.DarkAppTheme_NoActionBar
         } else {
-            setTheme(R.style.AppTheme_NoActionBar)
+            R.style.AppTheme_NoActionBar
         }
     }
 

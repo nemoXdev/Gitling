@@ -54,8 +54,12 @@ public class SheimiFragmentActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         BasicFunctions.setActiveActivity(this);
-        setTheme(Profile.getThemeResource(getApplicationContext()));
+        setTheme(getThemeResource());
         updateLocale(Profile.useEnglishLocale(getApplicationContext()));
+    }
+
+    protected int getThemeResource() {
+        return Profile.getThemeResource(getApplicationContext());
     }
 
     private void updateLocale(boolean useEnglishLocale) {
