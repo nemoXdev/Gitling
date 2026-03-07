@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)  // Kotlin 2.0+: Compose compiler is bundled with Kotlin
-    id("kotlin-kapt")
     id("kotlin-parcelize")
 }
 
@@ -117,7 +116,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-extensions:2.2.0")
     implementation(libs.androidx.lifecycle.viewmodel.ktx)
     implementation(libs.androidx.lifecycle.livedata.ktx)
-    kapt(libs.androidx.lifecycle.compiler)
 
     // LiveData observe as Compose state
     implementation(libs.androidx.compose.runtime.livedata)
