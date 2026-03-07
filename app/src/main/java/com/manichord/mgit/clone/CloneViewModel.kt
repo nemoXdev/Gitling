@@ -28,14 +28,25 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
 
     val visible : MutableLiveData<Boolean> = MutableLiveData()
 
+    private val accountManager = (application as MGitApplication).accountManager!!
+    val accounts: MutableLiveData<List<com.manichord.mgit.models.Account>> = MutableLiveData(emptyList())
+    val selectedAccount: MutableLiveData<com.manichord.mgit.models.Account?> = MutableLiveData(null)
+
     init {
         visible.value = false
         initLocal.value = false
-        val prefsHelper = (application as MGitApplication).prefenceHelper!!
+        val application = getApplication<MGitApplication>()
+        val prefsHelper = application.prefenceHelper!!
         cloneLocation.value = prefsHelper.repoRoot?.absolutePath ?: ""
+        refreshAccounts()
+    }
+
+    fun refreshAccounts() {
+        accounts.value = accountManager.getAccounts()
     }
 
     fun show(show : Boolean) {
+        if (show) refreshAccounts()
         visible.value = show
     }
 
@@ -59,6 +70,12 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
                 Repo.createRepo(Repo.EXTERNAL_PREFIX + location + "/" + repoName, remoteUrl, "")
             } else {
                 Repo.createRepo(repoName, remoteUrl, "")
+            }
+
+            selectedAccount.value?.let { account ->
+                repo.username = account.username
+                repo.password = account.token
+                repo.saveCredentials()
             }
 
             val task = CloneTask(repo, cloneRecursively, "", null)

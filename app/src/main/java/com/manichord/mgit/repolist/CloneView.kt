@@ -7,6 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.FolderOpen
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -58,6 +59,51 @@ fun CloneView(
         Spacer(modifier = Modifier.height(24.dp))
 
         if (!initLocal) {
+            val accounts by viewModel.accounts.observeAsState(emptyList())
+            val selectedAccount by viewModel.selectedAccount.observeAsState()
+            var expanded by remember { mutableStateOf(false) }
+
+            if (accounts.isNotEmpty()) {
+                Box(modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = selectedAccount?.name ?: "Select Account (Optional)",
+                        onValueChange = { },
+                        readOnly = true,
+                        label = { Text("Git Account") },
+                        trailingIcon = {
+                            IconButton(onClick = { expanded = true }) {
+                                Icon(androidx.compose.material.icons.Icons.Default.ArrowDropDown, null)
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = MaterialTheme.shapes.medium
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.fillMaxWidth(0.9f)
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("None (Manual Credentials)") },
+                            onClick = {
+                                viewModel.selectedAccount.value = null
+                                expanded = false
+                            }
+                        )
+                        accounts.forEach { account ->
+                            DropdownMenuItem(
+                                text = { Text("${account.name} (${account.username})") },
+                                onClick = {
+                                    viewModel.selectedAccount.value = account
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             OutlinedTextField(
                 value = remoteUrl,
                 onValueChange = {

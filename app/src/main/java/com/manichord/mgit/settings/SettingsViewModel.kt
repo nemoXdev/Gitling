@@ -27,6 +27,26 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _useGravatar = MutableLiveData(prefsHelper.useGravatar())
     val useGravatar: LiveData<Boolean> = _useGravatar
 
+    private val accountManager = (application as MGitApplication).accountManager!!
+
+    private val _accounts = MutableLiveData(accountManager.getAccounts())
+    val accounts: LiveData<List<com.manichord.mgit.models.Account>> = _accounts
+
+    fun addAccount(account: com.manichord.mgit.models.Account) {
+        accountManager.addAccount(account)
+        _accounts.value = accountManager.getAccounts()
+    }
+
+    fun deleteAccount(accountId: Long) {
+        accountManager.deleteAccount(accountId)
+        _accounts.value = accountManager.getAccounts()
+    }
+
+    fun updateAccount(account: com.manichord.mgit.models.Account) {
+        accountManager.updateAccount(account)
+        _accounts.value = accountManager.getAccounts()
+    }
+
     fun setRepoRoot(path: String) {
         prefsHelper.setRepoRoot(path)
         _repoRoot.value = path

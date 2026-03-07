@@ -21,6 +21,7 @@ import me.sheimi.sgit.R
 fun SettingsScreen(
     viewModel: SettingsViewModel,
     onBackClick: () -> Unit,
+    onManageAccountsClick: () -> Unit,
     onManageSshKeysClick: () -> Unit,
     onFeedbackClick: () -> Unit,
     onRepoRootClick: () -> Unit
@@ -68,6 +69,13 @@ fun SettingsScreen(
 
             Divider(modifier = Modifier.padding(vertical = 8.dp))
             SettingsCategory(title = stringResource(R.string.pref_category_title_git_profile))
+
+            SettingsClickableItem(
+                title = "Managed Accounts",
+                summary = "Save tokens for GitHub, GitLab, etc.",
+                icon = Icons.Default.AccountCircle,
+                onClick = onManageAccountsClick
+            )
 
             SettingsEditTextItem(
                 title = stringResource(R.string.preference_git_user_name),

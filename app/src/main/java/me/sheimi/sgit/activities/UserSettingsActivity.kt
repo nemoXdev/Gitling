@@ -6,6 +6,7 @@ import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.compose.runtime.*
 import com.manichord.mgit.settings.SettingsScreen
 import com.manichord.mgit.settings.SettingsViewModel
 import com.manichord.mgit.ui.theme.AppTheme
@@ -47,21 +48,32 @@ class UserSettingsActivity : SheimiFragmentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
+            var currentScreen by remember { mutableStateOf("settings") }
+
             AppTheme {
-                SettingsScreen(
-                    viewModel = viewModel,
-                    onBackClick = { finish() },
-                    onManageSshKeysClick = {
-                        startActivity(Intent(this, PrivateKeyManageActivity::class.java))
-                    },
-                    onFeedbackClick = {
-                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.feedback_url)))
-                        startActivity(intent)
-                    },
-                    onRepoRootClick = {
-                        folderPickerLauncher.launch(null)
+                androidx.compose.animation.Crossfade(targetState = currentScreen) { screen ->
+                    when (screen) {
+                        "settings" -> SettingsScreen(
+                            viewModel = viewModel,
+                            onBackClick = { finish() },
+                            onManageAccountsClick = { currentScreen = "accounts" },
+                            onManageSshKeysClick = {
+                                startActivity(Intent(this, PrivateKeyManageActivity::class.java))
+                            },
+                            onFeedbackClick = {
+                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.feedback_url)))
+                                startActivity(intent)
+                            },
+                            onRepoRootClick = {
+                                folderPickerLauncher.launch(null)
+                            }
+                        )
+                        "accounts" -> com.manichord.mgit.settings.AccountsScreen(
+                            viewModel = viewModel,
+                            onBackClick = { currentScreen = "settings" }
+                        )
                     }
-                )
+                }
             }
         }
     }
