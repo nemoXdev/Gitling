@@ -35,7 +35,7 @@ public class StatusTask extends RepoOpTask {
     }
 
     public void executeTask() {
-        execute();
+        super.executeTask();
     }
 
     private boolean status() {

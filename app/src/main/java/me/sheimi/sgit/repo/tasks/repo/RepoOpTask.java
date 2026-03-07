@@ -44,7 +44,7 @@ public abstract class RepoOpTask extends SheimiAsyncTask<Void, String, Boolean> 
 
     public void executeTask() {
         if (mIsTaskAdded) {
-            execute();
+            super.executeTask();
             return;
         }
         BasicFunctions.getActiveActivity().showToastMessage(
