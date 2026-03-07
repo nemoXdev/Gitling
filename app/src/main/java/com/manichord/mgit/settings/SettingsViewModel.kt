@@ -28,9 +28,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     val useGravatar: LiveData<Boolean> = _useGravatar
 
     private val accountManager = (application as MGitApplication).accountManager!!
+    private val githubAuthManager = (application as MGitApplication).githubAuthManager!!
 
     private val _accounts = MutableLiveData(accountManager.getAccounts())
     val accounts: LiveData<List<com.manichord.mgit.models.Account>> = _accounts
+
+    fun launchGitHubAuth() {
+        githubAuthManager.launchAuth(getApplication())
+    }
 
     fun addAccount(account: com.manichord.mgit.models.Account) {
         accountManager.addAccount(account)

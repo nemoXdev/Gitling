@@ -4,6 +4,7 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import me.sheimi.android.activities.SheimiFragmentActivity;
@@ -25,6 +26,8 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import androidx.core.content.ContextCompat;
 
 
 /**
@@ -107,7 +110,7 @@ public class CommitsListAdapter extends BaseAdapter {
         if (mFilter == null) {
             return true;
         }
-        if (in.getId().toString().startsWith("commit " + mFilter.toLowerCase())) {
+        if (in.getId().toString().startsWith("commit " + mFilter.toLowerCase(Locale.ROOT))) {
             return true;
         }
         /* Search in raw buffer is fast but it may find the string in
@@ -252,7 +255,7 @@ public class CommitsListAdapter extends BaseAdapter {
             colorResId = android.R.color.transparent;
         }
         if (mContext instanceof SheimiFragmentActivity) {
-            color = mContext.getResources().getColor(colorResId);
+            color = ContextCompat.getColor(mContext, colorResId);
             convertView.setBackgroundColor(color);
         }
         return convertView;

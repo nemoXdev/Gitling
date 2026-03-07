@@ -8,6 +8,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import androidx.core.content.ContextCompat;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.Arrays;
@@ -55,9 +57,9 @@ public class FilesListAdapter extends ArrayAdapter<File> {
         }
         // set if selected
         if (convertView.isSelected()) {
-            convertView.setBackgroundColor(convertView.getContext().getResources().getColor(R.color.pressed_sgit));
+            convertView.setBackgroundColor(ContextCompat.getColor(convertView.getContext(), R.color.pressed_sgit));
         } else {
-            convertView.setBackgroundColor(convertView.getContext().getResources().getColor(android.R.color.transparent));
+            convertView.setBackgroundColor(ContextCompat.getColor(convertView.getContext(), android.R.color.transparent));
         }
         return convertView;
     }

@@ -19,6 +19,14 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.manichord.mgit.clone.CloneViewModel
+import com.manichord.mgit.models.Account
+import com.manichord.mgit.models.AccountType
+import com.manichord.mgit.models.GitHubRepo
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.filled.*
+import androidx.compose.ui.text.style.TextOverflow
 import me.sheimi.sgit.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -29,8 +37,8 @@ fun CloneView(
     onCancelClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    // remoteUrl is a plain String in the VM for now, we sync it manually
-    var remoteUrl by remember { mutableStateOf(viewModel.remoteUrl) }
+    // Sync remoteUrl from VM to local state
+    var remoteUrl by remember(viewModel.remoteUrl) { mutableStateOf(viewModel.remoteUrl) }
     val localRepoName by viewModel.localRepoName.observeAsState("")
     val initLocal by viewModel.initLocal.observeAsState(false)
     val cloneRecursively by remember { mutableStateOf(viewModel.cloneRecursively) }
@@ -94,13 +102,29 @@ fun CloneView(
                             DropdownMenuItem(
                                 text = { Text("${account.name} (${account.username})") },
                                 onClick = {
-                                    viewModel.selectedAccount.value = account
+                                    viewModel.selectAccount(account)
                                     expanded = false
                                 }
                             )
                         }
                     }
                 }
+
+                // GitHub Repo Browser
+                if (selectedAccount?.type == AccountType.GITHUB) {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    GitHubRepoBrowser(
+                        viewModel = viewModel,
+                        onRepoSelected = { repo ->
+                            viewModel.remoteUrl = repo.cloneUrl
+                            // Auto-set local name if it's currently empty or just the old repo name
+                            if (viewModel.localRepoName.value.isNullOrBlank()) {
+                                viewModel.localRepoName.value = repo.name
+                            }
+                        }
+                    )
+                }
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
 
@@ -215,4 +239,74 @@ fun CloneView(
             }
         }
     }
+}
+
+@Composable
+fun GitHubRepoBrowser(
+    viewModel: CloneViewModel,
+    onRepoSelected: (GitHubRepo) -> Unit
+) {
+    val repos by viewModel.githubRepos.collectAsState()
+    val isLoading by viewModel.isLoadingRepos.collectAsState()
+    var searchQuery by remember { mutableStateOf("") }
+
+    Column(modifier = Modifier.fillMaxWidth().heightIn(max = 280.dp)) {
+        Text(
+            "Your GitHub Repositories",
+            style = MaterialTheme.typography.titleSmall,
+            modifier = Modifier.padding(vertical = 8.dp)
+        )
+
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { searchQuery = it },
+            placeholder = { Text("Search your repos...") },
+            leadingIcon = { Icon(Icons.Default.Search, null) },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            shape = MaterialTheme.shapes.medium,
+            singleLine = true
+        )
+
+        if (isLoading) {
+            Box(Modifier.fillMaxWidth().height(100.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
+            }
+        } else {
+            val filteredRepos = repos.filter {
+                it.fullName.contains(searchQuery, ignoreCase = true) ||
+                        (it.description?.contains(searchQuery, ignoreCase = true) ?: false)
+            }
+
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                items(filteredRepos) { repo ->
+                    GitHubRepoItem(repo = repo, onClick = { onRepoSelected(repo) })
+                    HorizontalDivider(modifier = Modifier.padding(horizontal = 8.dp), thickness = 0.5.dp)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun GitHubRepoItem(repo: GitHubRepo, onClick: () -> Unit) {
+    ListItem(
+        headlineContent = { Text(repo.name, fontWeight = FontWeight.Bold) },
+        supportingContent = {
+            Column {
+                if (!repo.description.isNullOrBlank()) {
+                    Text(repo.description, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Star, null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.secondary)
+                    Text(" ${repo.stars}", style = MaterialTheme.typography.bodySmall)
+                    repo.language?.let {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(it, style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+        },
+        leadingContent = { Icon(Icons.Default.Code, null) },
+        modifier = Modifier.clickable(onClick = onClick)
+    )
 }

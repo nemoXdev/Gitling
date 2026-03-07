@@ -17,7 +17,6 @@ import me.sheimi.sgit.activities.RepoDetailActivity
 import me.sheimi.sgit.activities.UserSettingsActivity
 import me.sheimi.sgit.activities.explorer.ExploreFileActivity
 import me.sheimi.sgit.activities.explorer.ImportRepositoryActivity
-import me.sheimi.sgit.adapters.RepoListAdapter
 import me.sheimi.sgit.database.RepoDbManager
 import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.repo.tasks.repo.CloneTask
@@ -39,7 +38,6 @@ class RepoListActivity : SheimiFragmentActivity() {
         }
     }
 
-    private lateinit var mRepoListAdapter: RepoListAdapter
     private lateinit var cloneViewModel: CloneViewModel
     private lateinit var viewModel: RepoListViewModel
 
@@ -56,14 +54,11 @@ class RepoListActivity : SheimiFragmentActivity() {
         PrivateKeyUtils.migratePrivateKeys()
         initUpdatedSSL()
 
-        mRepoListAdapter = RepoListAdapter(this)
-        mRepoListAdapter.queryAllRepo()
-
         setContent {
             RepoListComposeContent(
                 activity = this,
                 cloneViewModel = cloneViewModel,
-                adapter = mRepoListAdapter,
+                viewModel = viewModel,
                 onCloneClick = { cloneRepo() },
                 onCancelCloneViewClick = { hideCloneView() }
             )
@@ -72,8 +67,28 @@ class RepoListActivity : SheimiFragmentActivity() {
         handleIntent(intent)
     }
 
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        handleIntent(intent)
+    }
+
     private fun handleIntent(intent: Intent?) {
         val uri = intent?.data ?: return
+
+        // Handle GitHub Auth Callback
+        if (uri.scheme == "mgit" && uri.host == "github-auth") {
+            (application as MGitApplication).githubAuthManager?.handleAuthCallback(uri) { success ->
+                runOnUiThread {
+                    if (success) {
+                        Toast.makeText(this, "GitHub account connected!", Toast.LENGTH_SHORT).show()
+                    } else {
+                        Toast.makeText(this, "GitHub connection failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            }
+            return
+        }
+
         try {
             val remoteRepoUrl = URL(uri.scheme, uri.host, uri.port ?: -1, uri.path)
             val remoteUrl = remoteRepoUrl.toString()

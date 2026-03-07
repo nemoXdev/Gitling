@@ -67,7 +67,7 @@ fun SettingsScreen(
                 icon = Icons.Default.Language
             )
 
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             SettingsCategory(title = stringResource(R.string.pref_category_title_git_profile))
 
             SettingsClickableItem(
@@ -91,7 +91,7 @@ fun SettingsScreen(
                 icon = Icons.Default.Email
             )
 
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             SettingsCategory(title = stringResource(R.string.pref_category_title_security))
 
             SettingsClickableItem(
@@ -109,7 +109,7 @@ fun SettingsScreen(
                 icon = Icons.Default.Face
             )
 
-            Divider(modifier = Modifier.padding(vertical = 8.dp))
+            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
             SettingsCategory(title = stringResource(R.string.pref_category_title_about))
 
             SettingsClickableItem(

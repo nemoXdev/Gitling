@@ -3,6 +3,7 @@ package me.sheimi.sgit.repo.tasks.repo;
 import org.eclipse.jgit.api.TransportCommand;
 import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import java.util.Locale;
 
 import me.sheimi.android.activities.SheimiFragmentActivity.OnPasswordEntered;
 import me.sheimi.android.utils.BasicFunctions;
@@ -70,7 +71,7 @@ public abstract class RepoOpTask extends SheimiAsyncTask<Void, String, Boolean> 
         Timber.w("clone Auth error: %s", msg);
 
         if (msg == null || ((!msg.contains("Auth fail"))
-                && (!msg.toLowerCase().contains("auth")))) {
+                && (!msg.toLowerCase(Locale.ROOT).contains("auth")))) {
             return;
         }
 

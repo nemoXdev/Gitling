@@ -4,10 +4,11 @@ import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.ComposeView
 import com.manichord.mgit.clone.CloneViewModel
@@ -16,7 +17,6 @@ import me.sheimi.android.activities.SheimiFragmentActivity
 import me.sheimi.sgit.R
 import me.sheimi.sgit.activities.RepoDetailActivity
 import me.sheimi.sgit.activities.UserSettingsActivity
-import me.sheimi.sgit.adapters.RepoListAdapter
 import me.sheimi.sgit.database.RepoContract
 import me.sheimi.sgit.database.models.Repo
 
@@ -25,39 +25,22 @@ import me.sheimi.sgit.database.models.Repo
 fun RepoListComposeContent(
     activity: SheimiFragmentActivity,
     cloneViewModel: CloneViewModel,
-    adapter: RepoListAdapter,
+    viewModel: RepoListViewModel,
     onCloneClick: () -> Unit,
     onCancelCloneViewClick: () -> Unit
 ) {
-        AppTheme {
-            // We use a state to recompose when the adapter changes
-            var repoListSnapshot by remember { mutableStateOf(getAdapterList(adapter)) }
-            var showCloneSheet by remember { mutableStateOf(false) }
-            val sheetState = rememberModalBottomSheetState()
+    AppTheme {
+        val repoListSnapshot by viewModel.repoList.collectAsState()
+        var showCloneSheet by remember { mutableStateOf(false) }
+        val sheetState = rememberModalBottomSheetState()
 
-            // A hacky but effective way to observe legacy adapter changes without full refactor
-            DisposableEffect(adapter) {
-                val observer = object : android.database.DataSetObserver() {
-                    override fun onChanged() {
-                        repoListSnapshot = getAdapterList(adapter)
-                    }
-                    override fun onInvalidated() {
-                        repoListSnapshot = getAdapterList(adapter)
-                    }
-                }
-                adapter.registerDataSetObserver(observer)
-                onDispose {
-                    adapter.unregisterDataSetObserver(observer)
-                }
-            }
-
-            RepoListScreen(
-                repoList = repoListSnapshot,
-                onRepoClick = { repo ->
-                    val intent = Intent(activity, RepoDetailActivity::class.java)
-                    intent.putExtra(Repo.TAG, repo)
-                    activity.startActivity(intent)
-                },
+        RepoListScreen(
+            repoList = repoListSnapshot,
+            onRepoClick = { repo ->
+                val intent = Intent(activity, RepoDetailActivity::class.java)
+                intent.putExtra(Repo.TAG, repo)
+                activity.startActivity(intent)
+            },
                 onRepoLongClick = { repo ->
                     if (repo.repoStatus == RepoContract.REPO_STATUS_NULL) {
                         showRepoOptionsDialog(activity, repo)
@@ -101,14 +84,6 @@ fun RepoListComposeContent(
                 }
             }
         }
-}
-
-private fun getAdapterList(adapter: RepoListAdapter): List<Repo> {
-    val list = mutableListOf<Repo>()
-    for (i in 0 until adapter.count) {
-        adapter.getItem(i)?.let { list.add(it) }
-    }
-    return list
 }
 
 private fun showRepoOptionsDialog(context: SheimiFragmentActivity, repo: Repo) {

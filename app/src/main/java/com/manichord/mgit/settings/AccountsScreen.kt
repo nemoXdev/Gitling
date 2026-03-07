@@ -51,14 +51,25 @@ fun AccountsScreen(
                     .padding(paddingValues),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(
-                        Icons.Default.AccountCircle,
-                        contentDescription = null,
-                        modifier = Modifier.size(64.dp),
-                        tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-                    )
-                    Spacer(modifier = Modifier.height(16.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Button(
+                        onClick = { viewModel.launchGitHubAuth() },
+                        modifier = Modifier.fillMaxWidth(),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.tertiary
+                        )
+                    ) {
+                        Icon(Icons.Default.Code, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Login with GitHub")
+                    }
+
                     Text(
                         "No accounts saved",
                         style = MaterialTheme.typography.bodyLarge,
@@ -72,17 +83,26 @@ fun AccountsScreen(
                 }
             }
         } else {
-            LazyColumn(
+                LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
+                item {
+                    ListItem(
+                        headlineContent = { Text("Login with GitHub") },
+                        supportingContent = { Text("Authenticate via browser") },
+                        leadingContent = { Icon(Icons.Default.Code, null, tint = MaterialTheme.colorScheme.tertiary) },
+                        modifier = Modifier.clickable { viewModel.launchGitHubAuth() }
+                    )
+                    HorizontalDivider()
+                }
                 items(accounts) { account ->
                     AccountItem(
                         account = account,
                         onDeleteClick = { viewModel.deleteAccount(account.id) }
                     )
-                    Divider()
+                    HorizontalDivider()
                 }
             }
         }

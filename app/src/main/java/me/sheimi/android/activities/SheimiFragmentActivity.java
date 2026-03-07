@@ -56,6 +56,13 @@ public class SheimiFragmentActivity extends AppCompatActivity {
         BasicFunctions.setActiveActivity(this);
         setTheme(getThemeResource());
         updateLocale(Profile.useEnglishLocale(getApplicationContext()));
+
+        getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                finish();
+            }
+        });
     }
 
     protected int getThemeResource() {
@@ -94,11 +101,7 @@ public class SheimiFragmentActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_BACK) {
-            finish();
-            return true;
-        }
-        return false;
+        return super.onKeyUp(keyCode, event);
     }
 
     @Override
@@ -341,17 +344,17 @@ public class SheimiFragmentActivity extends AppCompatActivity {
 
     public void forwardTransition() {
         if (Build.VERSION.SDK_INT >= 34) {
-            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.fade_in, R.anim.fade_out);
+            overrideActivityTransition(OVERRIDE_TRANSITION_OPEN, R.anim.m3_open_enter, R.anim.m3_open_exit);
         } else {
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            overridePendingTransition(R.anim.m3_open_enter, R.anim.m3_open_exit);
         }
     }
 
     public void backTransition() {
         if (Build.VERSION.SDK_INT >= 34) {
-            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, R.anim.fade_in, R.anim.fade_out);
+            overrideActivityTransition(OVERRIDE_TRANSITION_CLOSE, R.anim.m3_close_enter, R.anim.m3_close_exit);
         } else {
-            overridePendingTransition(R.anim.fade_in, R.anim.fade_out);
+            overridePendingTransition(R.anim.m3_close_enter, R.anim.m3_close_exit);
         }
     }
 
