@@ -10,6 +10,7 @@ import com.manichord.mgit.ui.theme.AppTheme
 import me.sheimi.android.activities.SheimiFragmentActivity
 import me.sheimi.android.utils.BasicFunctions
 import me.sheimi.android.utils.Profile
+import androidx.core.content.IntentCompat
 import me.sheimi.sgit.R
 import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.dialogs.RenameBranchDialog
@@ -33,7 +34,7 @@ class BranchChooserActivity : SheimiFragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mRepo = intent.getSerializableExtra(Repo.TAG) as? Repo
+        mRepo = IntentCompat.getSerializableExtra(intent, Repo.TAG, Repo::class.java)
         if (mRepo == null) {
             finish()
             return

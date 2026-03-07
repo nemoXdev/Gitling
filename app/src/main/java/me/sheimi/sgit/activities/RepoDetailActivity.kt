@@ -1,7 +1,10 @@
 package me.sheimi.sgit.activities
 
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.IntentCompat
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
@@ -45,13 +48,24 @@ class RepoDetailActivity : SheimiFragmentActivity() {
     private var mCommitsFragment: CommitsFragment? = null
     private var mStatusFragment: StatusFragment? = null
 
+    private val branchChooserLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        val branchName = mRepo?.branchName
+        if (branchName == null) {
+            showToastMessage(R.string.error_something_wrong)
+            return@registerForActivityResult
+        }
+        reset(branchName)
+    }
+
     companion object {
         private const val BRANCH_CHOOSE_ACTIVITY = 0
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        mRepo = intent.getSerializableExtra(Repo.TAG) as? Repo
+        mRepo = IntentCompat.getSerializableExtra(intent, Repo.TAG, Repo::class.java)
         if (mRepo == null) {
             finish()
             return
@@ -70,7 +84,7 @@ class RepoDetailActivity : SheimiFragmentActivity() {
                     onBranchClick = {
                         val intent = Intent(this, BranchChooserActivity::class.java)
                         intent.putExtra(Repo.TAG, mRepo)
-                        startActivityForResult(intent, BRANCH_CHOOSE_ACTIVITY)
+                        branchChooserLauncher.launch(intent)
                     },
                     onOperationClick = { index ->
                         getRepoDelegate().executeAction(index)
@@ -126,20 +140,6 @@ class RepoDetailActivity : SheimiFragmentActivity() {
         mFilesFragment?.reset()
         mCommitsFragment?.reset()
         mStatusFragment?.reset()
-    }
-
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        super.onActivityResult(requestCode, resultCode, data)
-        when (requestCode) {
-            BRANCH_CHOOSE_ACTIVITY -> {
-                val branchName = mRepo?.branchName
-                if (branchName == null) {
-                    showToastMessage(R.string.error_something_wrong)
-                    return
-                }
-                reset(branchName)
-            }
-        }
     }
 
     fun closeOperationDrawer() {

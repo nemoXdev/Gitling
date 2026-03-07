@@ -13,6 +13,9 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 import com.manichord.mgit.ssh.PrivateKeyGenerate;
 
 import java.io.File;
@@ -29,6 +32,20 @@ import me.sheimi.sgit.ssh.PrivateKeyUtils;
 public class PrivateKeyManageActivity extends FileExplorerActivity implements ActionMode.Callback {
 
     private static final int REQUEST_IMPORT_KEY = 0;
+
+    private final ActivityResultLauncher<Intent> importKeyLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null) {
+                    Intent data = result.getData();
+                    String path = data.getExtras().getString(
+                            ExploreFileActivity.RESULT_PATH);
+                    File keyFile = new File(path);
+                    File newKey = new File(getRootFolder(), keyFile.getName());
+                    FsUtils.copyFile(keyFile, newKey);
+                    refreshList();
+                }
+            });
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -179,7 +196,7 @@ public class PrivateKeyManageActivity extends FileExplorerActivity implements Ac
         int id = item.getItemId();
         if (id == R.id.action_import) {
             Intent intent = new Intent(this, ExploreFileActivity.class);
-            startActivityForResult(intent, REQUEST_IMPORT_KEY);
+            importKeyLauncher.launch(intent);
             forwardTransition();
             return true;
         } else if (id == R.id.action_generate) {
@@ -188,24 +205,6 @@ public class PrivateKeyManageActivity extends FileExplorerActivity implements Ac
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (resultCode != Activity.RESULT_OK)
-            return;
-        switch (requestCode) {
-            case REQUEST_IMPORT_KEY: {
-                String path = data.getExtras().getString(
-                        ExploreFileActivity.RESULT_PATH);
-                File keyFile = new File(path);
-                File newKey = new File(getRootFolder(), keyFile.getName());
-                FsUtils.copyFile(keyFile, newKey);
-                refreshList();
-                break;
-            }
-        }
-
     }
 
     public void refreshList() {

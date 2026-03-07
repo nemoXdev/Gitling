@@ -3,6 +3,7 @@ package me.sheimi.sgit.activities;
 import android.os.Bundle;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.core.content.IntentCompat;
 import androidx.core.view.MenuItemCompat;
 import androidx.viewpager.widget.PagerTitleStrip;
 import androidx.viewpager.widget.ViewPager;
@@ -42,7 +43,7 @@ public class ViewFileActivity extends SheimiFragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_view_file);
-        mRepo = (Repo) getIntent().getSerializableExtra(Repo.TAG);
+        mRepo = IntentCompat.getSerializableExtra(getIntent(), Repo.TAG, Repo.class);
         mViewPager = (ViewPager) findViewById(R.id.pager);
         mTabItemPagerAdapter = new TabItemPagerAdapter(getSupportFragmentManager());
         mViewPager.setAdapter(mTabItemPagerAdapter);

@@ -16,6 +16,10 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.ProgressBar;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.IntentCompat;
+
 import org.eclipse.jgit.diff.DiffEntry;
 import org.eclipse.jgit.lib.PersonIdent;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -52,6 +56,19 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
     private List<String> mDiffStrs;
     private List<DiffEntry> mDiffEntries;
 
+    private final ActivityResultLauncher<Intent> saveDiffLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Uri diffUri = result.getData().getData();
+                    try {
+                        saveDiff(getContentResolver().openOutputStream(diffUri));
+                    } catch (IOException e) {
+                        showToastMessage(R.string.alert_file_creation_failure);
+                    }
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -64,7 +81,7 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
         mOldCommit = extras.getString(OLD_COMMIT);
         mNewCommit = extras.getString(NEW_COMMIT);
         mShowDescription = extras.getBoolean(SHOW_DESCRIPTION);
-        mRepo = (Repo) extras.getSerializable(Repo.TAG);
+        mRepo = IntentCompat.getSerializableExtra(getIntent(), Repo.TAG, Repo.class);
 
         String title = Repo.getCommitDisplayName(mNewCommit);
         if (mOldCommit != null)
@@ -164,18 +181,6 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        if (requestCode == REQUEST_SAVE_DIFF && resultCode == RESULT_OK) {
-            Uri diffUri = data.getData();
-            try {
-                saveDiff(getContentResolver().openOutputStream(diffUri));
-            } catch (IOException e) {
-                showToastMessage(R.string.alert_file_creation_failure);
-            }
-        }
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
         if (id == android.R.id.home) {
@@ -186,7 +191,7 @@ public class CommitDiffActivity extends SheimiFragmentActivity {
                     .setType("text/x-patch")
                     .putExtra(Intent.EXTRA_TITLE, Repo.getCommitDisplayName(mNewCommit) + ".diff");
 
-            startActivityForResult(intent, REQUEST_SAVE_DIFF);
+            saveDiffLauncher.launch(intent);
             return true;
         }
         return super.onOptionsItemSelected(item);
