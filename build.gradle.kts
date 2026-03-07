@@ -2,8 +2,8 @@
 plugins {
     id("com.android.application") version "8.3.2" apply false
     id("com.android.library") version "8.3.2" apply false
-    id("org.jetbrains.kotlin.android") version "2.0.21" apply false
-    id("org.jetbrains.kotlin.plugin.compose") version "2.0.21" apply false  // Kotlin 2.0+ Compose compiler
+    id("org.jetbrains.kotlin.android") version "2.1.10" apply false
+    id("org.jetbrains.kotlin.plugin.compose") version "2.1.10" apply false  // Kotlin 2.0+ Compose compiler
 
     // Dependency updates plugin
     id("com.github.ben-manes.versions") version "0.53.0" apply false
