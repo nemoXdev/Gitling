@@ -139,5 +139,5 @@ dependencies {
     debugImplementation("com.facebook.stetho:stetho-timber:1.6.0")
 
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.robolectric:robolectric:4.12.1")
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }
