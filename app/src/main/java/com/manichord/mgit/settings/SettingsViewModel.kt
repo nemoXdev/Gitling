@@ -39,6 +39,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     private val _accounts = MutableLiveData(accountManager.getAccounts())
     val accounts: LiveData<List<com.manichord.mgit.models.Account>> = _accounts
 
+    fun refreshAccounts() {
+        _accounts.value = accountManager.getAccounts()
+    }
+
     fun launchGitHubAuth() {
         githubAuthManager.launchAuth(getApplication())
     }

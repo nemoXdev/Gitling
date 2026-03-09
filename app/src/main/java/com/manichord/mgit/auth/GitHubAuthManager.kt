@@ -11,6 +11,7 @@ import timber.log.Timber
 import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
+import java.net.URLEncoder
 import java.util.Scanner
 
 class GitHubAuthManager(private val context: Context, private val accountManager: AccountManager) {
@@ -73,14 +74,21 @@ class GitHubAuthManager(private val context: Context, private val accountManager
                 if (token != null) {
                     val user = fetchUser(token)
                     if (user != null) {
-                        val account = Account(
-                            id = System.currentTimeMillis(),
-                            name = "GitHub (${user.getString("login")})",
-                            username = user.getString("login"),
-                            token = token,
-                            type = AccountType.GITHUB
-                        )
-                        accountManager.addAccount(account)
+                        val username = user.getString("login")
+                        val existing = accountManager.getAccounts()
+                            .find { it.username == username && it.type == AccountType.GITHUB }
+                        if (existing != null) {
+                            accountManager.updateAccount(existing.copy(token = token))
+                        } else {
+                            accountManager.addAccount(
+                                Account(
+                                    name = "GitHub ($username)",
+                                    username = username,
+                                    token = token,
+                                    type = AccountType.GITHUB
+                                )
+                            )
+                        }
                         onComplete(true)
                     } else {
                         onComplete(false)
@@ -103,9 +111,12 @@ class GitHubAuthManager(private val context: Context, private val accountManager
         val conn = url.openConnection() as HttpURLConnection
         conn.requestMethod = "POST"
         conn.setRequestProperty("Accept", "application/json")
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded")
         conn.doOutput = true
 
-        val body = "client_id=$clientId&client_secret=$clientSecret&code=$code&redirect_uri=$REDIRECT_URI"
+        fun encode(s: String) = URLEncoder.encode(s, "UTF-8")
+        val body = "client_id=${encode(clientId)}&client_secret=${encode(clientSecret)}" +
+            "&code=${encode(code)}&redirect_uri=${encode(REDIRECT_URI)}"
         OutputStreamWriter(conn.outputStream).use { it.write(body) }
 
         if (conn.responseCode == 200) {
@@ -118,7 +129,7 @@ class GitHubAuthManager(private val context: Context, private val accountManager
     private fun fetchUser(token: String): JSONObject? {
         val url = URL("$API_URL/user")
         val conn = url.openConnection() as HttpURLConnection
-        conn.setRequestProperty("Authorization", "token $token")
+        conn.setRequestProperty("Authorization", "Bearer $token")
         conn.setRequestProperty("Accept", "application/json")
 
         if (conn.responseCode == 200) {
@@ -133,7 +144,7 @@ class GitHubAuthManager(private val context: Context, private val accountManager
             try {
                 val url = URL("$API_URL/user/repos?sort=updated&per_page=100")
                 val conn = url.openConnection() as HttpURLConnection
-                conn.setRequestProperty("Authorization", "token $token")
+                conn.setRequestProperty("Authorization", "Bearer $token")
                 conn.setRequestProperty("Accept", "application/json")
 
                 if (conn.responseCode == 200) {

@@ -45,6 +45,12 @@ class UserSettingsActivity : SheimiFragmentActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Refresh accounts in case the user completed GitHub OAuth in the browser
+        viewModel.refreshAccounts()
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {

@@ -1,10 +1,10 @@
 package com.manichord.mgit.models
 
-enum class AccountType {
-    GITHUB,
-    GITLAB,
-    BITBUCKET,
-    CUSTOM
+enum class AccountType(val displayName: String) {
+    GITHUB("GitHub"),
+    GITLAB("GitLab"),
+    BITBUCKET("Bitbucket"),
+    CUSTOM("Custom")
 }
 
 data class Account(
