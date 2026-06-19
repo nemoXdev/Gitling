@@ -34,9 +34,9 @@ sealed class DeviceFlowStatus {
 class GitHubAuthManager(private val context: Context, private val accountManager: AccountManager) {
 
     companion object {
-        // Register an OAuth App at https://github.com/settings/developers with
-        // "Enable Device Flow" turned on, then replace this with its Client ID.
-        const val CLIENT_ID = "REPLACE_WITH_YOUR_GITHUB_OAUTH_CLIENT_ID"
+        // OAuth App registered at https://github.com/settings/developers with
+        // "Enable Device Flow" turned on. Not a secret -- safe to commit.
+        const val CLIENT_ID = "Ov23limX5SJfOQfVzNXZ"
         private const val DEVICE_CODE_URL = "https://github.com/login/device/code"
         private const val TOKEN_URL = "https://github.com/login/oauth/access_token"
         private const val API_URL = "https://api.github.com"
