@@ -8,15 +8,11 @@ import androidx.core.content.IntentCompat
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.FrameLayout
 import androidx.activity.compose.setContent
 import androidx.activity.viewModels
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.viewinterop.AndroidView
-import androidx.fragment.app.Fragment
 import com.manichord.mgit.repodetail.RepoDetailScreen
 import com.manichord.mgit.repodetail.RepoDetailViewModel
+import com.manichord.mgit.ui.components.FragmentHost
 import com.manichord.mgit.ui.theme.AppTheme
 import me.sheimi.android.activities.SheimiFragmentActivity
 import me.sheimi.android.utils.BasicFunctions
@@ -89,43 +85,12 @@ class RepoDetailActivity : SheimiFragmentActivity() {
                     onOperationClick = { index ->
                         getRepoDelegate().executeAction(index)
                     },
-                    filesContent = { FragmentContainer(mFilesFragment!!) },
-                    commitsContent = { FragmentContainer(mCommitsFragment!!) },
-                    statusContent = { FragmentContainer(mStatusFragment!!) }
+                    filesContent = { FragmentHost(supportFragmentManager, mFilesFragment!!) },
+                    commitsContent = { FragmentHost(supportFragmentManager, mCommitsFragment!!) },
+                    statusContent = { FragmentHost(supportFragmentManager, mStatusFragment!!) }
                 )
             }
         }
-    }
-
-    @Composable
-    private fun FragmentContainer(fragment: Fragment) {
-        AndroidView(
-            // Only build the (empty, unattached) container here. Running the fragment
-            // transaction synchronously inside factory crashes ("No view found for id ...")
-            // because this FrameLayout isn't attached to the window yet at this point, so
-            // FragmentManager can't resolve its id. Do the transaction in `update` instead,
-            // which Compose runs after the view is attached.
-            factory = { context ->
-                FrameLayout(context).apply { id = View.generateViewId() }
-            },
-            update = { view ->
-                if (supportFragmentManager.findFragmentById(view.id) !== fragment) {
-                    // Compose's Pager subcomposes pages for measurement/prefetch, which can
-                    // invoke this update more than once for the same shared fragment
-                    // instance against a different container id each time. FragmentManager
-                    // would still have it tied to a previous, now-discarded container --
-                    // detach it first so re-adding here is always safe.
-                    if (fragment.isAdded) {
-                        supportFragmentManager.beginTransaction()
-                            .remove(fragment)
-                            .commitNowAllowingStateLoss()
-                    }
-                    supportFragmentManager.beginTransaction()
-                        .replace(view.id, fragment)
-                        .commitNowAllowingStateLoss()
-                }
-            }
-        )
     }
 
     private fun repoInit() {
