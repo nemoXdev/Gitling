@@ -132,7 +132,15 @@ private fun showRepoOptionsDialog(context: SheimiFragmentActivity, repo: Repo) {
     // For a minimal bridge, we reproduce the dialogs here
     val options = context.resources.getStringArray(R.array.dialog_choose_repo_action_items)
 
-    val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(context)
+    // RepoListActivity's Android theme is still the legacy AppCompat-based Theme.Sgit, not
+    // Material Components/M3 -- it doesn't define colorSurface etc. that MaterialAlertDialogBuilder
+    // requires from the activity's theme by default. A ThemeOverlay isn't enough here since
+    // overlays only add deltas and still expect the base activity theme to supply the color
+    // scheme; pass a full, self-contained Material3 dialog theme instead.
+    val dialog = com.google.android.material.dialog.MaterialAlertDialogBuilder(
+        context,
+        com.google.android.material.R.style.Theme_Material3_DayNight_Dialog_Alert
+    )
         .setTitle(R.string.dialog_choose_option)
         .setItems(options) { dialogInterface: DialogInterface, which: Int ->
             when (which) {
