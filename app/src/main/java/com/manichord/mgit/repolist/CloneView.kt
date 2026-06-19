@@ -16,8 +16,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import android.net.Uri
+import android.os.Environment
+import android.provider.DocumentsContract
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.platform.LocalContext
 import com.manichord.mgit.clone.CloneViewModel
 import com.manichord.mgit.models.Account
 import com.manichord.mgit.models.AccountType
@@ -28,6 +32,22 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.text.style.TextOverflow
 import me.sheimi.sgit.R
+
+/**
+ * Document tree pickers return a content:// SAF URI, not a filesystem path -- but
+ * Repo/JGit need a real java.io.File path. We hold MANAGE_EXTERNAL_STORAGE, so for
+ * the primary volume we can resolve the tree's document ID straight to its absolute
+ * path. Other volumes (e.g. an SD card) aren't resolvable this way; return null.
+ */
+private fun resolvePrimaryVolumePath(uri: Uri): String? {
+    val docId = DocumentsContract.getTreeDocumentId(uri)
+    val parts = docId.split(":", limit = 2)
+    val volume = parts.getOrNull(0) ?: return null
+    if (!volume.equals("primary", ignoreCase = true)) return null
+    val relativePath = parts.getOrElse(1) { "" }
+    val base = Environment.getExternalStorageDirectory().absolutePath
+    return if (relativePath.isEmpty()) base else "$base/$relativePath"
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -47,10 +67,22 @@ fun CloneView(
     val localRepoNameError by viewModel.localRepoNameError.observeAsState()
 
     val cloneLocation by viewModel.cloneLocation.observeAsState("")
-    val folderPickerLauncher = androidx.activity.compose.rememberLauncherForActivityResult(
-        androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()
+    val context = LocalContext.current
+    val folderPickerLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree()
     ) { uri: Uri? ->
-        uri?.let { viewModel.cloneLocation.value = it.toString() }
+        uri?.let {
+            val path = resolvePrimaryVolumePath(it)
+            if (path != null) {
+                viewModel.cloneLocation.value = path
+            } else {
+                Toast.makeText(
+                    context,
+                    "That location isn't supported -- please pick a folder on internal storage.",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
     }
 
     Column(
