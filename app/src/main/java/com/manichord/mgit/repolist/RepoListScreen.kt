@@ -70,7 +70,8 @@ fun RepoListScreen(
                         RepoCard(
                             repo = repo,
                             onClick = { onRepoClick(repo) },
-                            onCancelClick = { onRepoLongClick(repo) } // Or a separate cancel callback
+                            onLongClick = { onRepoLongClick(repo) },
+                            onCancelClick = { onRepoLongClick(repo) }
                         )
                     }
                 }
