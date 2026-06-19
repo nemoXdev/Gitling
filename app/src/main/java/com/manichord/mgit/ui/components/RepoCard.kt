@@ -1,5 +1,7 @@
 package com.manichord.mgit.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
@@ -16,20 +18,25 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import me.sheimi.sgit.database.models.Repo
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun RepoCard(
     repo: Repo,
     onClick: () -> Unit,
+    onLongClick: () -> Unit = {},
     onCancelClick: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val isProcessing = !repo.getRepoStatus().isNullOrEmpty()
 
     ElevatedCard(
-        onClick = if (isProcessing) ({}) else onClick,
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .combinedClickable(
+                onClick = if (isProcessing) ({}) else onClick,
+                onLongClick = onLongClick
+            ),
         colors = CardDefaults.elevatedCardColors(
             containerColor = MaterialTheme.colorScheme.surface,
             contentColor = MaterialTheme.colorScheme.onSurface
