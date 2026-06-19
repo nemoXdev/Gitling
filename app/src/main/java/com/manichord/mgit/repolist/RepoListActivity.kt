@@ -16,6 +16,7 @@ import me.sheimi.sgit.R
 import me.sheimi.sgit.activities.RepoDetailActivity
 import me.sheimi.sgit.activities.UserSettingsActivity
 import me.sheimi.sgit.activities.explorer.ExploreFileActivity
+import me.sheimi.sgit.activities.explorer.FileExplorerActivity
 import me.sheimi.sgit.activities.explorer.ImportRepositoryActivity
 import me.sheimi.sgit.database.RepoDbManager
 import me.sheimi.sgit.database.models.Repo
@@ -148,7 +149,7 @@ class RepoListActivity : SheimiFragmentActivity() {
 
         when (requestCode) {
             REQUEST_IMPORT_REPO -> {
-                val path = data.extras?.getString(ExploreFileActivity.RESULT_PATH) ?: return
+                val path = data.extras?.getString(FileExplorerActivity.RESULT_PATH) ?: return
                 val file = File(path)
                 val dotGit = File(file, Repo.DOT_GIT_DIR)
                 if (!dotGit.exists()) {
