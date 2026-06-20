@@ -1,6 +1,6 @@
 # Code of conduct
 
-We expect MGit's contributors to act professionally and respectfully, and
+We expect Gitling's contributors to act professionally and respectfully, and
 we expect our social spaces to be safe and dignified environments.
 
 Specifically:
@@ -9,10 +9,10 @@ Specifically:
 * Be kind. Be courteous. Be welcoming.
 * Listen. Consider and acknowledge people's points before responding.
 
-Should you experience anything that makes you feel unwelcome in MGit's
-community, please contact [admin@manichord.com](mailto:admin@manichord.com). 
-We will not tolerate harassment from anyone in MGit's community, even 
-outside of MGit's public communication channels.
+Should you experience anything that makes you feel unwelcome in Gitling's
+community, please contact [bmaneeshacooray@gmail.com](mailto:bmaneeshacooray@gmail.com). 
+We will not tolerate harassment from anyone in Gitling's community, even 
+outside of Gitling's public communication channels.
 
 ## Conflict resolution
 

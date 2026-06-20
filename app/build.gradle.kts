@@ -9,7 +9,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.manichord.mgit"
+        applicationId = "com.maneeshacooray.gitling"
         minSdk = 23
         targetSdk = 37
         versionCode = 41
