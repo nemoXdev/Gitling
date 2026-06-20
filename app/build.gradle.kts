@@ -23,6 +23,21 @@ android {
         }
     }
 
+    signingConfigs {
+        // Release signing is configured externally via project properties (see
+        // .github/workflows/release.yml -- passed as -Pspecial -Palias=... etc).
+        // Without them (e.g. local `assembleRelease`), the release build type falls
+        // back to no signingConfig, same as any other unconfigured AGP release build.
+        if (project.hasProperty("special")) {
+            create("release") {
+                keyAlias = project.property("alias") as String
+                keyPassword = project.property("password") as String
+                storeFile = file(project.property("keystore") as String)
+                storePassword = project.property("store_password") as String
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -30,6 +45,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfigs.findByName("release")?.let { signingConfig = it }
         }
     }
 
@@ -52,18 +68,6 @@ android {
 
     lint {
         abortOnError = false
-    }
-
-    signingConfigs {
-        // Release signing is configured externally via project properties
-        if (project.hasProperty("special")) {
-            create("release") {
-                keyAlias = project.property("alias") as String
-                keyPassword = project.property("password") as String
-                storeFile = file(project.property("keystore") as String)
-                storePassword = project.property("store_password") as String
-            }
-        }
     }
 
     packaging {
