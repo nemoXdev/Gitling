@@ -21,11 +21,11 @@ public class GetCommitTask extends RepoOpTask {
     }
 
     public void executeTask() {
-        execute();
+        super.executeTask();
     }
 
     public GetCommitTask(Repo repo, String file, GetCommitCallback callback) {
-        super(repo);
+        super(repo, false);
         mFile = file;
         mCallback = callback;
     }

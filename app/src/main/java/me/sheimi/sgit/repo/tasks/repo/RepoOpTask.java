@@ -3,9 +3,12 @@ package me.sheimi.sgit.repo.tasks.repo;
 import org.eclipse.jgit.api.TransportCommand;
 import org.eclipse.jgit.lib.ProgressMonitor;
 import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import java.util.Locale;
 
+import com.manichord.mgit.models.Account;
 import me.sheimi.android.activities.SheimiFragmentActivity.OnPasswordEntered;
 import me.sheimi.android.utils.BasicFunctions;
+import me.sheimi.sgit.MGitApplication;
 import me.sheimi.sgit.R;
 import me.sheimi.sgit.database.models.Repo;
 import me.sheimi.sgit.repo.tasks.SheimiAsyncTask;
@@ -18,8 +21,24 @@ public abstract class RepoOpTask extends SheimiAsyncTask<Void, String, Boolean> 
     private int mSuccessMsg = 0;
 
     public RepoOpTask(Repo repo) {
+        this(repo, true);
+    }
+
+    /**
+     * @param requiresExclusiveAccess whether this task needs the repo's single-task-at-a-time
+     *                                slot (see Repo.addTask/removeTask) -- true for anything that
+     *                                writes to the repo (push/pull/commit/checkout/rebase/etc, the
+     *                                default), false for read-only tasks like StatusTask/
+     *                                GetCommitTask/CommitDiffTask, which would otherwise contend
+     *                                with each other (or with repo-open scaffolding) for no real
+     *                                safety benefit -- e.g. switching tabs quickly after opening a
+     *                                repo could silently drop a tab's data load with only a toast
+     *                                ("A task for this repo is already running") as a clue, leaving
+     *                                that tab's loading spinner stuck forever.
+     */
+    public RepoOpTask(Repo repo, boolean requiresExclusiveAccess) {
         mRepo = repo;
-        mIsTaskAdded = repo.addTask(this);
+        mIsTaskAdded = requiresExclusiveAccess ? repo.addTask(this) : true;
     }
 
     protected void onPostExecute(Boolean isSuccess) {
@@ -29,7 +48,8 @@ public abstract class RepoOpTask extends SheimiAsyncTask<Void, String, Boolean> 
             if (mException == null) {
                 BasicFunctions.showError(BasicFunctions.getActiveActivity(), mErrorRes, getErrorTitleRes());
             } else {
-                BasicFunctions.showException(BasicFunctions.getActiveActivity(), mException, mErrorRes, getErrorTitleRes());
+                BasicFunctions.showException(BasicFunctions.getActiveActivity(), mException, mErrorRes,
+                        getErrorTitleRes());
             }
         }
         if (isSuccess && mSuccessMsg != 0) {
@@ -43,7 +63,7 @@ public abstract class RepoOpTask extends SheimiAsyncTask<Void, String, Boolean> 
 
     public void executeTask() {
         if (mIsTaskAdded) {
-            execute();
+            super.executeTask();
             return;
         }
         BasicFunctions.getActiveActivity().showToastMessage(
@@ -54,10 +74,20 @@ public abstract class RepoOpTask extends SheimiAsyncTask<Void, String, Boolean> 
         String username = mRepo.getUsername();
         String password = mRepo.getPassword();
 
+        if (username == null || password == null || username.trim().isEmpty()
+                || password.trim().isEmpty()) {
+            Account account = MGitApplication.getContext().getAccountManager() == null ? null
+                    : MGitApplication.getContext().getAccountManager().findAccountForRemoteUrl(mRepo.getRemoteURL());
+            if (account != null) {
+                username = account.getUsername();
+                password = account.getToken();
+            }
+        }
+
         if (username != null && password != null && !username.trim().isEmpty()
-            && !password.trim().isEmpty()) {
+                && !password.trim().isEmpty()) {
             UsernamePasswordCredentialsProvider auth = new UsernamePasswordCredentialsProvider(
-                username, password);
+                    username, password);
             command.setCredentialsProvider(auth);
         } else {
             Timber.d("no CredentialsProvider when no username/password provided");
@@ -70,7 +100,7 @@ public abstract class RepoOpTask extends SheimiAsyncTask<Void, String, Boolean> 
         Timber.w("clone Auth error: %s", msg);
 
         if (msg == null || ((!msg.contains("Auth fail"))
-                && (!msg.toLowerCase().contains("auth")))) {
+                && (!msg.toLowerCase(Locale.ROOT).contains("auth")))) {
             return;
         }
 
@@ -121,6 +151,10 @@ public abstract class RepoOpTask extends SheimiAsyncTask<Void, String, Boolean> 
         @Override
         public boolean isCancelled() {
             return isTaskCanceled();
+        }
+
+        @Override
+        public void showDuration(boolean enabled) {
         }
 
         private void setProgress() {

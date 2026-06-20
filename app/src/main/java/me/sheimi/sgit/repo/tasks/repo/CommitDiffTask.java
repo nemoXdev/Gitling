@@ -44,7 +44,7 @@ public class CommitDiffTask extends RepoOpTask {
 
     public CommitDiffTask(Repo repo, String oldCommit, String newCommit,
                           CommitDiffResult callback, boolean showDescription) {
-        super(repo);
+        super(repo, false);
         mOldCommit = oldCommit;
         mNewCommit = newCommit;
         mCallback = callback;
@@ -159,7 +159,7 @@ public class CommitDiffTask extends RepoOpTask {
     }
 
     public void executeTask() {
-        execute();
+        super.executeTask();
     }
 
 }

@@ -9,6 +9,8 @@ import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.repo.tasks.repo.CloneTask
 import me.sheimi.sgit.repo.tasks.repo.InitLocalTask
 import timber.log.Timber
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class CloneViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -19,6 +21,7 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
         }
 
     val localRepoName : MutableLiveData<String> = MutableLiveData()
+    val cloneLocation : MutableLiveData<String> = MutableLiveData()
     var cloneRecursively : Boolean = false
     val initLocal : MutableLiveData<Boolean> = MutableLiveData()
 
@@ -27,25 +30,91 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
 
     val visible : MutableLiveData<Boolean> = MutableLiveData()
 
+    private val accountManager = (application as MGitApplication).accountManager!!
+    private val githubAuthManager = (application as MGitApplication).githubAuthManager!!
+
+    val accounts: MutableLiveData<List<com.manichord.mgit.models.Account>> = MutableLiveData(emptyList())
+    val selectedAccount: MutableLiveData<com.manichord.mgit.models.Account?> = MutableLiveData(null)
+
+    private val _githubRepos = kotlinx.coroutines.flow.MutableStateFlow<List<com.manichord.mgit.models.GitHubRepo>>(emptyList())
+    val githubRepos = _githubRepos.asStateFlow()
+
+    private val _isLoadingRepos = kotlinx.coroutines.flow.MutableStateFlow(false)
+    val isLoadingRepos = _isLoadingRepos.asStateFlow()
+
     init {
         visible.value = false
         initLocal.value = false
+        val application = getApplication<MGitApplication>()
+        val prefsHelper = application.prefenceHelper!!
+        cloneLocation.value = prefsHelper.repoRoot?.absolutePath ?: ""
+        refreshAccounts()
+    }
+
+    fun selectAccount(account: com.manichord.mgit.models.Account?) {
+        selectedAccount.value = account
+        if (account?.type == com.manichord.mgit.models.AccountType.GITHUB) {
+            fetchGitHubRepos(account.token)
+        } else {
+            _githubRepos.value = emptyList()
+        }
+    }
+
+    private fun fetchGitHubRepos(token: String) {
+        _isLoadingRepos.value = true
+        githubAuthManager.fetchRepos(token) { reposJson ->
+            val repos = reposJson.map { json ->
+                com.manichord.mgit.models.GitHubRepo(
+                    name = json.getString("name"),
+                    fullName = json.getString("full_name"),
+                    description = json.optString("description", null),
+                    cloneUrl = json.getString("clone_url"),
+                    stars = json.optInt("stargazers_count", 0),
+                    language = json.optString("language", null)
+                )
+            }
+            _githubRepos.value = repos
+            _isLoadingRepos.value = false
+        }
+    }
+
+    fun refreshAccounts() {
+        accounts.value = accountManager.getAccounts()
     }
 
     fun show(show : Boolean) {
+        if (show) refreshAccounts()
         visible.value = show
     }
 
 
     fun cloneRepo() {
-        // FIXME: createRepo should not use user visible strings, instead will need to be refactored
-        // to set an observable state
         if (initLocal.value as Boolean) {
             Timber.d("INIT LOCAL %s", localRepoName.value)
             initLocalRepo()
         } else {
             Timber.d("CLONE REPO %s %s [%b]", localRepoName.value, remoteUrl, cloneRecursively)
-            val repo = Repo.createRepo(localRepoName.value, remoteUrl, "")
+            // Use custom location if provided
+            val location = cloneLocation.value ?: ""
+            val repoName = localRepoName.value ?: ""
+
+            // Generate the final path
+            // If location is the default root, we can just use the name
+            val prefsHelper = (getApplication() as MGitApplication).prefenceHelper!!
+            val defaultRoot = prefsHelper.repoRoot?.absolutePath ?: ""
+
+            val repo = if (location.isNotEmpty() && location != defaultRoot) {
+                Repo.createRepo(Repo.EXTERNAL_PREFIX + location + "/" + repoName, remoteUrl, "")
+            } else {
+                Repo.createRepo(repoName, remoteUrl, "")
+            }
+
+            selectedAccount.value?.let { account ->
+                repo.username = account.username
+                repo.password = account.token
+                repo.saveCredentials()
+            }
+
             val task = CloneTask(repo, cloneRecursively, "", null)
             task.executeTask()
             remoteUrl = ""

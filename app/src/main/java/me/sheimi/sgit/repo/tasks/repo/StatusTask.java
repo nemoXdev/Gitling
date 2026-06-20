@@ -18,7 +18,7 @@ public class StatusTask extends RepoOpTask {
     private StringBuffer mResult = new StringBuffer();
 
     public StatusTask(Repo repo, GetStatusCallback callback) {
-        super(repo);
+        super(repo, false);
         mCallback = callback;
     }
 
@@ -35,7 +35,7 @@ public class StatusTask extends RepoOpTask {
     }
 
     public void executeTask() {
-        execute();
+        super.executeTask();
     }
 
     private boolean status() {

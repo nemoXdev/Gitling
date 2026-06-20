@@ -21,6 +21,8 @@ import java.security.Security
  */
 open class MGitApplication : Application() {
     var securePrefsHelper: SecurePrefsHelper? = null
+    var accountManager: com.manichord.mgit.auth.AccountManager? = null
+    var githubAuthManager: com.manichord.mgit.auth.GitHubAuthManager? = null
     var prefenceHelper: PreferenceHelper? = null
 
 
@@ -52,6 +54,8 @@ open class MGitApplication : Application() {
         prefenceHelper = PreferenceHelper(this)
         try {
             securePrefsHelper = SecurePrefsHelper(this)
+            accountManager = com.manichord.mgit.auth.AccountManager(securePrefsHelper!!)
+            githubAuthManager = com.manichord.mgit.auth.GitHubAuthManager(this, accountManager!!)
             mCredentialsProvider = AndroidJschCredentialsProvider(securePrefsHelper)
         } catch (e: SecurePrefsException) {
             Timber.e(e)

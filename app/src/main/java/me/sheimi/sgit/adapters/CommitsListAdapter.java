@@ -4,20 +4,25 @@ import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import me.sheimi.android.activities.SheimiFragmentActivity;
 import me.sheimi.android.utils.BasicFunctions;
 import me.sheimi.sgit.R;
 import me.sheimi.sgit.database.models.Repo;
+import me.sheimi.sgit.repo.tasks.repo.GetCommitGraphTask;
 import me.sheimi.sgit.repo.tasks.repo.GetCommitTask;
 import me.sheimi.sgit.repo.tasks.repo.GetCommitTask.GetCommitCallback;
 
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.revplot.PlotCommit;
+import org.eclipse.jgit.revplot.PlotLane;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import android.content.Context;
-import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -25,6 +30,12 @@ import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import androidx.core.content.ContextCompat;
 
 
 /**
@@ -40,54 +51,58 @@ public class CommitsListAdapter extends BaseAdapter {
     private ArrayList<Integer> mFiltered;
     private Context mContext;
     private String mFile;
-    private BackgroundUpdate mUpdate;
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+    private final Handler mMainHandler = new Handler(Looper.getMainLooper());
+    private Future<?> mFilterFuture;
     private int mPosted;
     private Object mProgressLock = new Object();
     private boolean mIsIncomplete;
     private int mProgressCursor;
     private long mPostAtTime;
+    /**
+     * Full branch/merge topology graph mode (current vs. all branches) is only offered for
+     * the main repo Commits tab (mFile == null) -- the file-scoped commit history used by
+     * ViewFileActivity always uses the simpler, unchanged GetCommitTask path.
+     */
+    private boolean mAllBranches = false;
 
-    private class BackgroundUpdate extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected Void doInBackground(Void... params) {
-            int i;
-            for (i = mProgressCursor; i < mAll.size(); i++) {
+    private void startFilteringWorker() {
+        mFilterFuture = mExecutor.submit(() -> {
+            for (int i = mProgressCursor; i < mAll.size(); i++) {
+                if (Thread.currentThread().isInterrupted()) {
+                    return;
+                }
                 if (mFiltered.size() != mPosted && System.nanoTime() > mPostAtTime) {
                     synchronized (mProgressLock) {
                         mProgressCursor = i;
                         mPosted = mFiltered.size();
-                        return null;
                     }
+                    postUpdate();
+                    return;
                 }
-                if (isCancelled()) {
-                    return null;
-                }
-                if (isAccepted(mAll.get(i)))
+                if (isAccepted(mAll.get(i))) {
                     mFiltered.add(i);
+                }
             }
             synchronized (mProgressLock) {
                 mPosted = mFiltered.size();
                 mIsIncomplete = false;
             }
-            return null;
-        }
+            postUpdate();
+        });
+    }
 
-        @Override
-        protected void onPostExecute(Void aVoid) {
-            super.onPostExecute(aVoid);
-            if (isCancelled()) {
-                return;
-            }
+    private void postUpdate() {
+        mMainHandler.post(() -> {
             synchronized (mProgressLock) {
                 notifyDataSetChanged();
                 if (mIsIncomplete) {
                     // Updates after 1 s
-                    mPostAtTime = System.nanoTime() + 1000000000;
-                    mUpdate = new BackgroundUpdate();
-                    mUpdate.execute();
+                    mPostAtTime = System.nanoTime() + 1_000_000_000;
+                    startFilteringWorker();
                 }
             }
-        }
+        });
     }
 
     public CommitsListAdapter(Context context, Set<Integer> chosenItems,
@@ -107,7 +122,7 @@ public class CommitsListAdapter extends BaseAdapter {
         if (mFilter == null) {
             return true;
         }
-        if (in.getId().toString().startsWith("commit " + mFilter.toLowerCase())) {
+        if (in.getId().toString().startsWith("commit " + mFilter.toLowerCase(Locale.ROOT))) {
             return true;
         }
         /* Search in raw buffer is fast but it may find the string in
@@ -126,23 +141,24 @@ public class CommitsListAdapter extends BaseAdapter {
 
     private void stopFiltering() {
         try {
-            mUpdate.cancel(true);
-            mUpdate = null;
-        } catch (Exception e) {
+            if (mFilterFuture != null) {
+                mFilterFuture.cancel(true);
+                mFilterFuture = null;
+            }
+        } catch (Exception ignored) {
         }
     }
 
     private void doFiltering() {
         mFiltered = null;
         if (mFilter != null) {
-            mUpdate = new BackgroundUpdate();
             mPosted = 0;
             mIsIncomplete = true;
             mFiltered = new ArrayList<>();
             mProgressCursor = 0;
             // Show first result after 100 ms
             mPostAtTime = System.nanoTime() + 100000000;
-            mUpdate.execute();
+            startFilteringWorker();
         } else {
             notifyDataSetChanged();
         }
@@ -252,7 +268,7 @@ public class CommitsListAdapter extends BaseAdapter {
             colorResId = android.R.color.transparent;
         }
         if (mContext instanceof SheimiFragmentActivity) {
-            color = mContext.getResources().getColor(colorResId);
+            color = ContextCompat.getColor(mContext, colorResId);
             convertView.setBackgroundColor(color);
         }
         return convertView;
@@ -272,6 +288,24 @@ public class CommitsListAdapter extends BaseAdapter {
 
     public void resetCommit() {
         clear();
+        if (mFile == null) {
+            GetCommitGraphTask getCommitGraphTask = new GetCommitGraphTask(mRepo, mAllBranches,
+                    plotCommits -> {
+                        if (plotCommits != null) {
+                            synchronized (mProgressLock) {
+                                stopFiltering();
+                                ArrayList<RevCommit> all = new ArrayList<>(plotCommits.size());
+                                for (PlotCommit<PlotLane> commit : plotCommits) {
+                                    all.add(commit);
+                                }
+                                mAll = all;
+                                doFiltering();
+                            }
+                        }
+                    });
+            getCommitGraphTask.executeTask();
+            return;
+        }
         GetCommitTask getCommitTask = new GetCommitTask(mRepo, mFile,
                 new GetCommitCallback() {
 
@@ -288,6 +322,21 @@ public class CommitsListAdapter extends BaseAdapter {
                     }
                 });
         getCommitTask.executeTask();
+    }
+
+    /** Only meaningful for the main repo Commits tab -- see {@link #mAllBranches}. */
+    public boolean supportsGraphMode() {
+        return mFile == null;
+    }
+
+    public boolean isAllBranches() {
+        return mAllBranches;
+    }
+
+    public void setAllBranches(boolean allBranches) {
+        if (mAllBranches == allBranches) return;
+        mAllBranches = allBranches;
+        resetCommit();
     }
 
     private static class CommitsListItemHolder {

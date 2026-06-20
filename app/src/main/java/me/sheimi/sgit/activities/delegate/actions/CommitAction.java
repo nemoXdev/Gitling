@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 
 public class CommitAction extends RepoAction {
 
@@ -67,9 +68,7 @@ public class CommitAction extends RepoAction {
         Author (String username, String email) {
             mName = username;
             mEmail = email;
-            mKeywords = new ArrayList<String> ();
-            Collections.addAll(mKeywords, mName.toLowerCase().split(SPLIT_KEYWORDS));
-            Collections.addAll(mKeywords, mEmail.toLowerCase().split(SPLIT_KEYWORDS));
+        mKeywords = new ArrayList<>();
         }
 
         Author(PersonIdent personIdent) {
@@ -111,11 +110,11 @@ public class CommitAction extends RepoAction {
         }
 
         public boolean matches(String constraint) {
-            constraint = constraint.toLowerCase();
-            if (mEmail.toLowerCase().startsWith(constraint)) {
+            constraint = constraint.toLowerCase(Locale.ROOT);
+            if (mEmail.toLowerCase(Locale.ROOT).startsWith(constraint)) {
                 return true;
             }
-            if (mName.toLowerCase().startsWith(constraint)) {
+            if (mName.toLowerCase(Locale.ROOT).startsWith(constraint)) {
                 return true;
             }
 

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    package="me.sheimi.sgit" >
+    xmlns:tools="http://schemas.android.com/tools" >
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
@@ -56,14 +55,6 @@
                 android:value=".activities.RepoDetailActivity" />
         </activity>
         <activity
-            android:name=".activities.explorer.ImportRepositoryActivity"
-            android:label="@string/title_activity_import_repository"
-            android:parentActivityName="com.manichord.mgit.repolist.RepoListActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.manichord.mgit.repolist.RepoListActivity" />
-        </activity>
-        <activity
             android:name=".activities.explorer.PrivateKeyManageActivity"
             android:label="@string/title_activity_private_key_manage"
             android:parentActivityName="com.manichord.mgit.repolist.RepoListActivity" >
@@ -87,18 +78,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.manichord.mgit.repolist.RepoListActivity" />
         </activity>
-        <activity
-            android:name=".activities.explorer.ExploreRootDirActivity"
-            android:label="@string/title_activity_explore_file"
-            android:parentActivityName=".activities.UserSettingsActivity" >
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".activities.UserSettingsActivity" />
-        </activity>
 
         <provider
             android:name="androidx.core.content.FileProvider"
-            android:authorities="com.manichord.mgit.fileprovider"
+            android:authorities="com.maneeshacooray.gitling.fileprovider"
             android:exported="false"
             android:grantUriPermissions="true">
             <meta-data
