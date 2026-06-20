@@ -14,6 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import com.manichord.mgit.clone.CloneViewModel
 import com.manichord.mgit.models.AccountType
@@ -200,15 +201,18 @@ private fun RepoOptionsDialog(
         onDismissRequest = onDismissRequest,
         title = { Text(repoName) },
         text = {
+            val transparentListItemColors = ListItemDefaults.colors(containerColor = Color.Transparent)
             Column {
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.label_rename)) },
                     leadingContent = { Icon(Icons.Default.Edit, contentDescription = null) },
+                    colors = transparentListItemColors,
                     modifier = Modifier.clickable(onClick = onRenameClick)
                 )
                 ListItem(
                     headlineContent = { Text(stringResource(R.string.label_delete)) },
                     leadingContent = { Icon(Icons.Default.Delete, contentDescription = null) },
+                    colors = transparentListItemColors,
                     modifier = Modifier.clickable(onClick = onDeleteClick)
                 )
             }
