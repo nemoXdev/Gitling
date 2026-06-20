@@ -11,10 +11,13 @@ import me.sheimi.android.activities.SheimiFragmentActivity;
 import me.sheimi.android.utils.BasicFunctions;
 import me.sheimi.sgit.R;
 import me.sheimi.sgit.database.models.Repo;
+import me.sheimi.sgit.repo.tasks.repo.GetCommitGraphTask;
 import me.sheimi.sgit.repo.tasks.repo.GetCommitTask;
 import me.sheimi.sgit.repo.tasks.repo.GetCommitTask.GetCommitCallback;
 
 import org.eclipse.jgit.lib.PersonIdent;
+import org.eclipse.jgit.revplot.PlotCommit;
+import org.eclipse.jgit.revplot.PlotLane;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import android.content.Context;
@@ -56,6 +59,12 @@ public class CommitsListAdapter extends BaseAdapter {
     private boolean mIsIncomplete;
     private int mProgressCursor;
     private long mPostAtTime;
+    /**
+     * Full branch/merge topology graph mode (current vs. all branches) is only offered for
+     * the main repo Commits tab (mFile == null) -- the file-scoped commit history used by
+     * ViewFileActivity always uses the simpler, unchanged GetCommitTask path.
+     */
+    private boolean mAllBranches = false;
 
     private void startFilteringWorker() {
         mFilterFuture = mExecutor.submit(() -> {
@@ -279,6 +288,24 @@ public class CommitsListAdapter extends BaseAdapter {
 
     public void resetCommit() {
         clear();
+        if (mFile == null) {
+            GetCommitGraphTask getCommitGraphTask = new GetCommitGraphTask(mRepo, mAllBranches,
+                    plotCommits -> {
+                        if (plotCommits != null) {
+                            synchronized (mProgressLock) {
+                                stopFiltering();
+                                ArrayList<RevCommit> all = new ArrayList<>(plotCommits.size());
+                                for (PlotCommit<PlotLane> commit : plotCommits) {
+                                    all.add(commit);
+                                }
+                                mAll = all;
+                                doFiltering();
+                            }
+                        }
+                    });
+            getCommitGraphTask.executeTask();
+            return;
+        }
         GetCommitTask getCommitTask = new GetCommitTask(mRepo, mFile,
                 new GetCommitCallback() {
 
@@ -295,6 +322,21 @@ public class CommitsListAdapter extends BaseAdapter {
                     }
                 });
         getCommitTask.executeTask();
+    }
+
+    /** Only meaningful for the main repo Commits tab -- see {@link #mAllBranches}. */
+    public boolean supportsGraphMode() {
+        return mFile == null;
+    }
+
+    public boolean isAllBranches() {
+        return mAllBranches;
+    }
+
+    public void setAllBranches(boolean allBranches) {
+        if (mAllBranches == allBranches) return;
+        mAllBranches = allBranches;
+        resetCommit();
     }
 
     private static class CommitsListItemHolder {

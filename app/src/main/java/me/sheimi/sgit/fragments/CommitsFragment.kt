@@ -57,6 +57,7 @@ class CommitsFragment : BaseFragment(), ActionMode.Callback {
     private lateinit var dateFormatter: java.text.DateFormat
 
     private var rows by mutableStateOf<List<CommitRowState>>(emptyList())
+    private var allBranches by mutableStateOf(false)
 
     private fun refreshRowsFromAdapter() {
         val adapter = commitsListAdapter ?: return
@@ -93,6 +94,7 @@ class CommitsFragment : BaseFragment(), ActionMode.Callback {
             override fun onInvalidated() = refreshRowsFromAdapter()
         })
         commitsListAdapter = adapter
+        allBranches = adapter.isAllBranches
         reset()
 
         return ComposeView(requireContext()).apply {
@@ -102,7 +104,13 @@ class CommitsFragment : BaseFragment(), ActionMode.Callback {
                         rows = rows,
                         dateFormatter = dateFormatter,
                         onItemClick = ::onItemClicked,
-                        onItemLongClick = ::onItemLongClicked
+                        onItemLongClick = ::onItemLongClicked,
+                        showBranchScopeToggle = adapter.supportsGraphMode(),
+                        allBranches = allBranches,
+                        onAllBranchesChange = { value ->
+                            allBranches = value
+                            commitsListAdapter?.setAllBranches(value)
+                        }
                     )
                 }
             }

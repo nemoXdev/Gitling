@@ -7,17 +7,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,6 +36,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import me.sheimi.android.utils.BasicFunctions
 import me.sheimi.sgit.database.models.Repo
+import org.eclipse.jgit.revplot.PlotCommit
+import org.eclipse.jgit.revplot.PlotLane
 import org.eclipse.jgit.revwalk.RevCommit
 import java.text.DateFormat
 
@@ -47,33 +52,63 @@ fun CommitsListContent(
     dateFormatter: DateFormat,
     onItemClick: (Int) -> Unit,
     onItemLongClick: (Int) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    showBranchScopeToggle: Boolean = false,
+    allBranches: Boolean = false,
+    onAllBranchesChange: (Boolean) -> Unit = {}
 ) {
     val lastItemIndex = rows.indexOfLast { it is CommitRowState.Item }
-    LazyColumn(modifier = modifier.fillMaxSize()) {
-        itemsIndexed(
-            rows,
-            key = { index, row -> if (row is CommitRowState.Item) row.commit.name else "loading-$index" }
-        ) { index, row ->
-            when (row) {
-                is CommitRowState.Loading -> {
-                    Box(
-                        modifier = Modifier.fillMaxWidth().padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator()
+    val maxLanePosition = if (rows.isEmpty()) 0 else rows.maxOf { row ->
+        (row as? CommitRowState.Item)?.commit?.let { (it as? PlotCommit<*>)?.getLane()?.position } ?: 0
+    }
+    val graphWidthUnits = graphWidthUnits(maxLanePosition)
+
+    Column(modifier = modifier.fillMaxSize()) {
+        if (showBranchScopeToggle) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            ) {
+                FilterChip(
+                    selected = !allBranches,
+                    onClick = { onAllBranchesChange(false) },
+                    label = { Text("Current branch") }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(
+                    selected = allBranches,
+                    onClick = { onAllBranchesChange(true) },
+                    label = { Text("All branches") }
+                )
+            }
+        }
+        LazyColumn(modifier = Modifier.fillMaxSize()) {
+            itemsIndexed(
+                rows,
+                key = { index, row -> if (row is CommitRowState.Item) row.commit.name else "loading-$index" }
+            ) { index, row ->
+                when (row) {
+                    is CommitRowState.Loading -> {
+                        Box(
+                            modifier = Modifier.fillMaxWidth().padding(32.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
-                }
-                is CommitRowState.Item -> {
-                    CommitRow(
-                        commit = row.commit,
-                        selected = row.selected,
-                        dateFormatter = dateFormatter,
-                        isFirst = index == 0,
-                        isLast = index == lastItemIndex,
-                        onClick = { onItemClick(row.position) },
-                        onLongClick = { onItemLongClick(row.position) }
-                    )
+                    is CommitRowState.Item -> {
+                        CommitRow(
+                            commit = row.commit,
+                            selected = row.selected,
+                            dateFormatter = dateFormatter,
+                            isFirst = index == 0,
+                            isLast = index == lastItemIndex,
+                            graphWidthUnits = graphWidthUnits,
+                            onClick = { onItemClick(row.position) },
+                            onLongClick = { onItemLongClick(row.position) }
+                        )
+                    }
                 }
             }
         }
@@ -83,7 +118,8 @@ fun CommitsListContent(
 /**
  * A reflog-style graph node: a vertical lane line running the full height of the row, with a
  * ring-and-dot marker at the row's vertical center for the commit itself. [isFirst]/[isLast]
- * trim the line tail so it doesn't dangle past the first/last commit in the list.
+ * trim the line tail so it doesn't dangle past the first/last commit in the list. Used when
+ * the commit list has no real lane/topology data (e.g. the per-file commit history).
  */
 @Composable
 private fun CommitGraphNode(isFirst: Boolean, isLast: Boolean, modifier: Modifier = Modifier) {
@@ -134,6 +170,7 @@ private fun CommitRow(
     dateFormatter: DateFormat,
     isFirst: Boolean,
     isLast: Boolean,
+    graphWidthUnits: Int,
     onClick: () -> Unit,
     onLongClick: () -> Unit
 ) {
@@ -145,8 +182,15 @@ private fun CommitRow(
             .background(if (selected) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
             .combinedClickable(onClick = onClick, onLongClick = onLongClick)
             .padding(horizontal = 8.dp, vertical = 12.dp)
+            .height(IntrinsicSize.Min)
     ) {
-        CommitGraphNode(isFirst = isFirst, isLast = isLast)
+        @Suppress("UNCHECKED_CAST")
+        val plotCommit = commit as? PlotCommit<PlotLane>
+        if (plotCommit != null) {
+            CommitGraphCanvas(commit = plotCommit, graphWidthUnits = graphWidthUnits)
+        } else {
+            CommitGraphNode(isFirst = isFirst, isLast = isLast)
+        }
         AndroidView(
             factory = { context -> ImageView(context) },
             update = { imageView -> BasicFunctions.setAvatarImage(imageView, person.emailAddress) },
