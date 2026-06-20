@@ -13,6 +13,13 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 7,
+            versionName = "1.0.6",
+            highlights = listOf(
+                "Commit graph redesigned to match lazygit's compact terminal style -- denser lanes and one line per commit instead of tall cards"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 6,
             versionName = "1.0.5",
             highlights = listOf(
