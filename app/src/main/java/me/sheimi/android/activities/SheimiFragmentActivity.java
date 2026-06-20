@@ -172,19 +172,6 @@ public class SheimiFragmentActivity extends AppCompatActivity {
         showToastMessage(getString(resId));
     }
 
-    /**
-     * This activity's Android theme is still the legacy AppCompat-based Theme.Sgit, not
-     * Material Components/M3, so it doesn't define colorSurface etc. that
-     * MaterialAlertDialogBuilder requires from the activity's theme by default -- it throws
-     * IllegalArgumentException at construction time otherwise. A ThemeOverlay isn't enough
-     * here since overlays only add deltas and still expect the base activity theme to supply
-     * the color scheme; pass a full, self-contained Material3 dialog theme instead.
-     */
-    private com.google.android.material.dialog.MaterialAlertDialogBuilder newDialogBuilder() {
-        return new com.google.android.material.dialog.MaterialAlertDialogBuilder(
-                this, com.google.android.material.R.style.Theme_Material3_DayNight_Dialog_Alert);
-    }
-
     public void showMessageDialog(int title, int msg, int positiveBtn,
             DialogInterface.OnClickListener positiveListener) {
         showMessageDialog(title, getString(msg), positiveBtn,
@@ -201,16 +188,18 @@ public class SheimiFragmentActivity extends AppCompatActivity {
     public void showMessageDialog(int title, String msg, int positiveBtn,
             int negativeBtn, DialogInterface.OnClickListener positiveListener,
             DialogInterface.OnClickListener negativeListener) {
-        newDialogBuilder()
-                .setTitle(title).setMessage(msg)
-                .setPositiveButton(positiveBtn, positiveListener)
-                .setNegativeButton(negativeBtn, negativeListener).show();
+        com.manichord.mgit.dialogs.MessageDialog.show(
+                findViewById(android.R.id.content),
+                getString(title), msg,
+                getString(positiveBtn), getString(negativeBtn),
+                positiveListener, negativeListener);
     }
 
     public void showMessageDialog(int title, String msg) {
-        newDialogBuilder()
-                .setTitle(title).setMessage(msg)
-                .setPositiveButton(R.string.label_ok, new DummyDialogListener()).show();
+        com.manichord.mgit.dialogs.MessageDialog.showSingleButton(
+                findViewById(android.R.id.content),
+                getString(title), msg,
+                getString(R.string.label_ok), new DummyDialogListener());
     }
 
     public void showOptionsDialog(int title, final int option_names,
@@ -221,41 +210,19 @@ public class SheimiFragmentActivity extends AppCompatActivity {
 
     public void showOptionsDialog(int title, CharSequence[] option_values,
             final onOptionDialogClicked[] option_listeners) {
-        newDialogBuilder()
-                .setTitle(title)
-                .setItems(option_values, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        option_listeners[which].onClicked();
-                    }
-                }).create().show();
+        com.manichord.mgit.dialogs.OptionsDialog.show(
+                findViewById(android.R.id.content),
+                getString(title), option_values,
+                getString(R.string.label_cancel), option_listeners);
     }
 
     public void showEditTextDialog(int title, int hint, int positiveBtn,
             final OnEditTextDialogClicked positiveListener) {
-        LayoutInflater inflater = getLayoutInflater();
-        View layout = inflater.inflate(R.layout.dialog_edit_text, null);
-        final EditText editText = (EditText) layout.findViewById(R.id.editText);
-        editText.setHint(hint);
-        newDialogBuilder()
-                .setTitle(title)
-                .setView(layout)
-                .setPositiveButton(positiveBtn,
-                        new DialogInterface.OnClickListener() {
-                            @Override
-                            public void onClick(
-                                    DialogInterface dialogInterface, int i) {
-                                String text = editText.getText().toString();
-                                if (text == null || text.trim().isEmpty()) {
-                                    showToastMessage(R.string.alert_you_should_input_something);
-                                    return;
-                                }
-                                positiveListener.onClicked(text);
-                            }
-                        })
-                .setNegativeButton(R.string.label_cancel,
-                        new DummyDialogListener())
-                .show();
+        com.manichord.mgit.dialogs.EditTextDialog.show(
+                findViewById(android.R.id.content),
+                getString(title), getString(hint),
+                getString(positiveBtn), getString(R.string.label_cancel),
+                positiveListener);
     }
 
     public void promptForPassword(OnPasswordEntered onPasswordEntered,
