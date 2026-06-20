@@ -50,12 +50,17 @@ public class SheimiFragmentActivity extends AppCompatActivity {
         public boolean onClick();
     }
 
+    private boolean mLastUseDynamicColor;
+    private String mLastAppFont;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         BasicFunctions.setActiveActivity(this);
         setTheme(getThemeResource());
         updateLocale(Profile.useEnglishLocale(getApplicationContext()));
+        mLastUseDynamicColor = Profile.useDynamicColor(getApplicationContext());
+        mLastAppFont = Profile.getAppFont(getApplicationContext());
 
         getOnBackPressedDispatcher().addCallback(this, new androidx.activity.OnBackPressedCallback(true) {
             @Override
@@ -89,6 +94,17 @@ public class SheimiFragmentActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         BasicFunctions.setActiveActivity(this);
+
+        // Compose screens read theme preferences (dynamic color, app font) once at
+        // composition time via AppTheme's default parameters -- they're not reactive, so an
+        // Activity left alive in the back stack while the user changes a theme setting
+        // elsewhere (e.g. in Settings) won't pick up the change on its own. Recreating here
+        // is the standard fix: cheap, and only triggers when something actually changed.
+        boolean useDynamicColor = Profile.useDynamicColor(getApplicationContext());
+        String appFont = Profile.getAppFont(getApplicationContext());
+        if (useDynamicColor != mLastUseDynamicColor || !java.util.Objects.equals(appFont, mLastAppFont)) {
+            recreate();
+        }
     }
 
     @Override
