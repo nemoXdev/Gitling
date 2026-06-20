@@ -56,7 +56,7 @@
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.manichord.mgit.repolist.RepoListActivity" />
         </activity>
 
-        <provider android:name="androidx.core.content.FileProvider" android:authorities="com.manichord.mgit.fileprovider" android:exported="false" android:grantUriPermissions="true">
+        <provider android:name="androidx.core.content.FileProvider" android:authorities="com.maneeshacooray.gitling.fileprovider" android:exported="false" android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths" />
         </provider>
 
