@@ -1,34 +1,41 @@
-package com.manichord.mgit.repolist
+package com.manichord.mgit
 
 import android.Manifest
 import android.app.Activity
 import android.content.Intent
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.manichord.mgit.clone.CloneViewModel
+import com.manichord.mgit.repolist.RepoListComposeContent
+import com.manichord.mgit.repolist.RepoListViewModel
 import com.manichord.mgit.transport.MGitHttpConnectionFactory
 import me.sheimi.android.activities.SheimiFragmentActivity
 import me.sheimi.sgit.MGitApplication
 import me.sheimi.sgit.R
 import me.sheimi.sgit.activities.RepoDetailActivity
-import me.sheimi.sgit.activities.UserSettingsActivity
-import me.sheimi.sgit.activities.explorer.ExploreFileActivity
 import me.sheimi.sgit.activities.explorer.FileExplorerActivity
 import me.sheimi.sgit.database.RepoDbManager
 import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.repo.tasks.repo.CloneTask
 import me.sheimi.sgit.ssh.PrivateKeyUtils
-import me.sheimi.android.utils.BasicFunctions
 import me.sheimi.android.utils.Profile
 import timber.log.Timber
 import java.io.File
 import java.net.MalformedURLException
 import java.net.URL
 
-class RepoListActivity : SheimiFragmentActivity() {
+/**
+ * Single host Activity for the app, replacing the former per-screen Activity model one screen
+ * at a time -- see the single-activity + Navigation Compose rewrite scope. Phase 1 hosts only
+ * the "repoList" route (formerly RepoListActivity); every other screen is still its own
+ * Activity, started via Intent from within this NavHost's composables exactly as before.
+ */
+class MainActivity : SheimiFragmentActivity() {
 
     override fun getThemeResource(): Int {
         return if (Profile.getTheme(this) == 1) {
@@ -55,13 +62,18 @@ class RepoListActivity : SheimiFragmentActivity() {
         initUpdatedSSL()
 
         setContent {
-            RepoListComposeContent(
-                activity = this,
-                cloneViewModel = cloneViewModel,
-                viewModel = viewModel,
-                onCloneClick = { cloneRepo() },
-                onCancelCloneViewClick = { hideCloneView() }
-            )
+            val navController = rememberNavController()
+            NavHost(navController = navController, startDestination = "repoList") {
+                composable("repoList") {
+                    RepoListComposeContent(
+                        activity = this@MainActivity,
+                        cloneViewModel = cloneViewModel,
+                        viewModel = viewModel,
+                        onCloneClick = { cloneRepo() },
+                        onCancelCloneViewClick = { hideCloneView() }
+                    )
+                }
+            }
         }
 
         handleIntent(intent)
@@ -138,8 +150,6 @@ class RepoListActivity : SheimiFragmentActivity() {
 
     private fun hideCloneView() {
         cloneViewModel.show(false)
-        // Keyboard hiding is handled by TopAppBar/BottomSheet focus in Compose usually,
-        // but keeping it for safety if needed via ViewHelper
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
