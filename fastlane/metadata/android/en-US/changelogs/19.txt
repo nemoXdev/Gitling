@@ -1,0 +1,1 @@
+Gitling no longer requests broad storage access -- repos now live in Gitling's own private folder. If you'd picked a custom storage location before, you'll see a one-time notice and need to re-clone repos that were stored there.
