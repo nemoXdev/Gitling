@@ -1,19 +1,14 @@
 package me.sheimi.android.activities;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
-import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +17,8 @@ import android.widget.EditText;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.vectordrawable.graphics.drawable.VectorDrawableCompat;
 
-import com.manichord.mgit.permissions.PermissionsHelper;
 import com.nostra13.universalimageloader.cache.disc.impl.UnlimitedDiskCache;
 import com.nostra13.universalimageloader.core.DisplayImageOptions;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -43,8 +35,6 @@ import me.sheimi.sgit.R;
 import me.sheimi.sgit.dialogs.DummyDialogListener;
 
 public class SheimiFragmentActivity extends AppCompatActivity {
-
-    private static final int MGIT_PERMISSIONS_REQUEST = 123;
 
     public static interface OnBackClickListener {
         public boolean onClick();
@@ -118,59 +108,6 @@ public class SheimiFragmentActivity extends AppCompatActivity {
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
         return super.onKeyUp(keyCode, event);
-    }
-
-    @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        switch (requestCode) {
-            case MGIT_PERMISSIONS_REQUEST: {
-                // If request is cancelled, the result arrays are empty.
-                if (grantResults.length > 0
-                        && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-
-                } else {
-                    // permission denied
-                    showMessageDialog(R.string.dialog_not_supported, getString(R.string.dialog_permission_not_granted));
-                }
-                return;
-            }
-        }
-    }
-
-    protected void checkAndRequestRequiredPermissions(Context context, String legacyPermission) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (PermissionsHelper.Companion.canReadStorage(context) != true) {
-                showMessageDialog(
-                        R.string.dialog_access_all_files_title,
-                        getString(R.string.dialog_access_all_files_msg),
-                        R.string.label_ok,
-                        R.string.label_cancel,
-                        (dialogInterface, i) -> {
-                            try {
-                                Uri uri = Uri.fromParts("package", getPackageName(), null);
-                                Intent permissionAllowIntent = new Intent(
-                                        Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri);
-                                startActivity(permissionAllowIntent);
-                            } catch (ActivityNotFoundException e) {
-                                Log.e("SheimiFragmentActivity",
-                                        "could not start activity to request all files permission");
-                                showMessageDialog(R.string.dialog_error_title,
-                                        getString(R.string.error_couldnt_display_all_files_permission));
-                            }
-                        },
-                        (dialogInterface, i) -> {
-                            // can't go on without all files permission
-                            finish();
-                        });
-
-            }
-        } else {
-            if (ContextCompat.checkSelfPermission(this, legacyPermission) != PackageManager.PERMISSION_GRANTED) {
-                // Permission is not granted, so request it from user
-                ActivityCompat.requestPermissions(this, new String[] { legacyPermission }, MGIT_PERMISSIONS_REQUEST);
-            }
-        }
     }
 
     /* View Utils Start */

@@ -2,7 +2,6 @@ package com.manichord.mgit.repolist
 
 import android.content.Intent
 import android.net.Uri
-import android.provider.Settings
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -42,8 +41,8 @@ fun RepoListComposeContent(
 ) {
     AppTheme {
         val repoListSnapshot by viewModel.repoList.collectAsState()
-        val showPermissionDialog by viewModel.showPermissionDialog.collectAsState()
         val updateAvailable by viewModel.updateAvailable.collectAsState()
+        val showStorageMigrationNotice by viewModel.showStorageMigrationNotice.collectAsState()
         var showCloneSheet by remember { mutableStateOf(false) }
         val sheetState = rememberModalBottomSheetState()
 
@@ -108,21 +107,6 @@ fun RepoListComposeContent(
             },
             onDismissUpdateClick = { viewModel.dismissUpdateAvailable() }
         )
-
-        if (showPermissionDialog) {
-            PermissionRequiredDialog(
-                onConfirm = {
-                    viewModel.setShowPermissionDialog(false)
-                    val uri = Uri.fromParts("package", activity.packageName, null)
-                    val intent = Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, uri)
-                    activity.startActivity(intent)
-                },
-                onDismiss = {
-                    viewModel.setShowPermissionDialog(false)
-                    activity.finish()
-                }
-            )
-        }
 
         if (showCloneSheet) {
             ModalBottomSheet(
@@ -195,29 +179,27 @@ fun RepoListComposeContent(
                 }
             )
         }
-    }
-}
 
-@Composable
-fun PermissionRequiredDialog(
-    onConfirm: () -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.dialog_access_all_files_title)) },
-        text = { Text(stringResource(R.string.dialog_access_all_files_msg)) },
-        confirmButton = {
-            TextButton(onClick = onConfirm) {
-                Text(stringResource(R.string.label_ok))
-            }
-        },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.label_cancel))
-            }
+        if (showStorageMigrationNotice) {
+            AlertDialog(
+                onDismissRequest = { viewModel.dismissStorageMigrationNotice() },
+                title = { Text("Storage access changed") },
+                text = {
+                    Text(
+                        "Gitling no longer requests broad storage access, for privacy and " +
+                            "to comply with F-Droid's review guidelines. Any repos you'd " +
+                            "stored outside Gitling's own folder are no longer reachable -- " +
+                            "you'll need to re-clone them. Sorry for the inconvenience."
+                    )
+                },
+                confirmButton = {
+                    TextButton(onClick = { viewModel.dismissStorageMigrationNotice() }) {
+                        Text(stringResource(R.string.label_ok))
+                    }
+                }
+            )
         }
-    )
+    }
 }
 
 @Composable

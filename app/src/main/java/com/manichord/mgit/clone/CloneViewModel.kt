@@ -52,9 +52,9 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
     init {
         visible.value = false
         initLocal.value = false
-        val application = getApplication<MGitApplication>()
-        val prefsHelper = application.prefenceHelper!!
-        cloneLocation.value = prefsHelper.repoRoot?.absolutePath ?: ""
+        // Display-only -- repos always clone into the app-private default root (no folder
+        // picker; see CloneView), so this just shows the user where that is.
+        cloneLocation.value = Repo.getDefaultRepoRootDir().absolutePath
         refreshAccounts()
         accountManager.accountsChanged.observeForever(accountsChangedObserver)
     }
@@ -107,20 +107,8 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
             initLocalRepo()
         } else {
             Timber.d("CLONE REPO %s %s [%b]", localRepoName.value, remoteUrl, cloneRecursively)
-            // Use custom location if provided
-            val location = cloneLocation.value ?: ""
             val repoName = localRepoName.value ?: ""
-
-            // Generate the final path
-            // If location is the default root, we can just use the name
-            val prefsHelper = (getApplication() as MGitApplication).prefenceHelper!!
-            val defaultRoot = prefsHelper.repoRoot?.absolutePath ?: ""
-
-            val repo = if (location.isNotEmpty() && location != defaultRoot) {
-                Repo.createRepo(Repo.EXTERNAL_PREFIX + location + "/" + repoName, remoteUrl, "")
-            } else {
-                Repo.createRepo(repoName, remoteUrl, "")
-            }
+            val repo = Repo.createRepo(repoName, remoteUrl, "")
 
             selectedAccount.value?.let { account ->
                 repo.username = account.username

@@ -27,10 +27,9 @@ fun SettingsScreen(
     onManageAccountsClick: () -> Unit,
     onManageSshKeysClick: () -> Unit,
     onFeedbackClick: () -> Unit,
-    onRepoRootClick: () -> Unit,
     onViewReleaseClick: (String) -> Unit = {}
 ) {
-    val repoRoot by viewModel.repoRoot.observeAsState("")
+    val repoRoot = viewModel.repoRoot
     val useEnglish by viewModel.useEnglish.observeAsState(false)
     val gitUserName by viewModel.gitUserName.observeAsState("")
     val gitUserEmail by viewModel.gitUserEmail.observeAsState("")
@@ -60,11 +59,10 @@ fun SettingsScreen(
         ) {
             SettingsCategory(title = stringResource(R.string.pref_category_title_general))
 
-            SettingsClickableItem(
-                title = stringResource(R.string.preference_repo_location),
-                summary = repoRoot.ifEmpty { "Default" },
-                icon = Icons.Default.Folder,
-                onClick = onRepoRootClick
+            ListItem(
+                headlineContent = { Text(stringResource(R.string.preference_repo_location)) },
+                supportingContent = { Text(repoRoot) },
+                leadingContent = { Icon(Icons.Default.Folder, null) }
             )
 
             SettingsSwitchItem(

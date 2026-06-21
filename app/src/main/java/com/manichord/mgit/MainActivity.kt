@@ -1,10 +1,8 @@
 package com.manichord.mgit
 
-import android.Manifest
 import android.content.DialogInterface
 import android.content.Intent
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
@@ -39,7 +37,6 @@ import com.manichord.mgit.transport.MGitHttpConnectionFactory
 import com.manichord.mgit.ui.components.FragmentHost
 import com.manichord.mgit.ui.theme.AppTheme
 import com.manichord.mgit.ui.theme.FontOption
-import com.manichord.mgit.util.resolvePrimaryVolumePath
 import me.sheimi.android.activities.SheimiFragmentActivity
 import me.sheimi.sgit.MGitApplication
 import me.sheimi.sgit.R
@@ -47,7 +44,6 @@ import me.sheimi.sgit.activities.CommitDiffActivity
 import me.sheimi.sgit.activities.RepoDetailActivity
 import me.sheimi.sgit.activities.explorer.ExploreFileActivity
 import me.sheimi.sgit.activities.explorer.PrivateKeyManageActivity
-import me.sheimi.sgit.database.RepoContract
 import me.sheimi.sgit.database.RepoDbManager
 import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.dialogs.RenameBranchDialog
@@ -60,7 +56,6 @@ import me.sheimi.sgit.repo.tasks.repo.CloneTask
 import me.sheimi.sgit.ssh.PrivateKeyUtils
 import me.sheimi.android.utils.Profile
 import timber.log.Timber
-import java.io.File
 import java.io.IOException
 import java.net.MalformedURLException
 import java.net.URL
@@ -153,66 +148,6 @@ class MainActivity : SheimiFragmentActivity() {
 
     /** Set just before navigating to "userSettings"; mirrors pendingRepoForDetail above. */
     private var pendingUserSettingsInitialScreen: String? = null
-
-    private val folderPickerLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
-        uri?.let {
-            val path = resolvePrimaryVolumePath(it)
-            if (path != null) {
-                settingsViewModel.setRepoRoot(path)
-                scanForExistingRepos(path)
-            } else {
-                showToastMessage("That location isn't supported -- please pick a folder on internal storage.")
-            }
-        }
-    }
-
-    /** Picking a new repo root may point at a folder that already has git repos in it (e.g.
-     * cloned by another tool, or restored from a backup) -- find any not already tracked and
-     * add them, so they show up without the user having to do anything else. Runs off the main
-     * thread since it opens each candidate repo via JGit to read its remote/last commit, which
-     * is real disk I/O. */
-    private fun scanForExistingRepos(rootPath: String) {
-        Thread {
-            try {
-                val subdirs = File(rootPath).listFiles { f -> f.isDirectory } ?: return@Thread
-                val prefsHelper = (applicationContext as MGitApplication).prefenceHelper!!
-                // Compare resolved absolute directories, not raw localPath strings -- existing
-                // entries may be stored either as a bare relative name (repos under the default
-                // root) or as an "external://<absolute path>" marker (repos elsewhere), and only
-                // Repo.getDir() knows how to resolve either form correctly.
-                val existingDirs = Repo.getRepoList(applicationContext, RepoDbManager.queryAllRepo())
-                    .map { Repo.getDir(prefsHelper, it.localPath).absolutePath }
-                    .toSet()
-
-                var importedCount = 0
-                for (dir in subdirs) {
-                    if (dir.absolutePath in existingDirs) continue
-                    if (!File(dir, Repo.DOT_GIT_DIR).exists()) continue
-                    // dir lives directly under the root that was just set, so it resolves
-                    // correctly via the same bare-relative-name convention used when cloning to
-                    // the default root (see CloneViewModel.cloneRepo()) -- no external:// prefix.
-                    val repo = Repo.importRepo(dir.name, RepoContract.REPO_STATUS_NULL)
-                    repo.updateRemote()
-                    repo.updateLatestCommitInfo()
-                    importedCount++
-                }
-
-                if (importedCount > 0) {
-                    runOnUiThread {
-                        showToastMessage(
-                            if (importedCount == 1) {
-                                "Found and added 1 existing repository"
-                            } else {
-                                "Found and added $importedCount existing repositories"
-                            }
-                        )
-                    }
-                }
-            } catch (e: Exception) {
-                Timber.e(e, "Error scanning repo root for existing repos")
-            }
-        }.start()
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -434,7 +369,6 @@ class MainActivity : SheimiFragmentActivity() {
                                         val intent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.feedback_url)))
                                         startActivity(intent)
                                     },
-                                    onRepoRootClick = { folderPickerLauncher.launch(null) },
                                     onViewReleaseClick = { url ->
                                         startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                                     }
@@ -573,13 +507,6 @@ class MainActivity : SheimiFragmentActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            if (!com.manichord.mgit.permissions.PermissionsHelper.isExternalStorageManager()) {
-                viewModel.setShowPermissionDialog(true)
-            }
-        } else {
-            checkAndRequestRequiredPermissions(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-        }
         // Refresh accounts in case the user completed GitHub OAuth in the browser. (CloneViewModel
         // doesn't need an equivalent call here -- it observes AccountManager.accountsChanged
         // directly, which fires the moment an account is actually saved rather than depending on

@@ -13,6 +13,13 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 19,
+            versionName = "1.0.18",
+            highlights = listOf(
+                "Gitling no longer requests broad storage access -- repos now live in Gitling's own private folder. If you'd picked a custom storage location before, you'll see a one-time notice and need to re-clone repos that were stored there"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 18,
             versionName = "1.0.17",
             highlights = listOf(

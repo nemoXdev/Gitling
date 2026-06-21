@@ -12,14 +12,16 @@ import me.sheimi.android.utils.Profile
 import me.sheimi.sgit.BuildConfig
 import me.sheimi.sgit.MGitApplication
 import me.sheimi.sgit.R
+import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.preference.PreferenceHelper
 
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val prefsHelper: PreferenceHelper = (application as MGitApplication).prefenceHelper!!
 
-    private val _repoRoot = MutableLiveData(prefsHelper.repoRoot?.absolutePath ?: "")
-    val repoRoot: LiveData<String> = _repoRoot
+    // Fixed -- repos always live under the app-private default root now (no custom-location
+    // picker; see CloneView/RepoListScreen), so this is purely informational.
+    val repoRoot: String = Repo.getDefaultRepoRootDir().absolutePath
 
     private val _useEnglish = MutableLiveData(prefsHelper.useEnglish())
     val useEnglish: LiveData<Boolean> = _useEnglish
@@ -97,11 +99,6 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
     fun updateAccount(account: com.manichord.mgit.models.Account) {
         accountManager.updateAccount(account)
         _accounts.value = accountManager.getAccounts()
-    }
-
-    fun setRepoRoot(path: String) {
-        prefsHelper.setRepoRoot(path)
-        _repoRoot.value = path
     }
 
     fun setUseEnglish(use: Boolean) {
