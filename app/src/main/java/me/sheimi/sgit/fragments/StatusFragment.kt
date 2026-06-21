@@ -46,7 +46,7 @@ class StatusFragment : RepoDetailFragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        rawActivity.setStatusFragment(this)
+        repoDetailActivity.setStatusFragment(this)
 
         repo = (arguments?.getSerializable(Repo.TAG) as? Repo)
             ?: (savedInstanceState?.getSerializable(Repo.TAG) as? Repo)
@@ -80,12 +80,12 @@ class StatusFragment : RepoDetailFragment() {
     }
 
     private fun showDiff(oldCommit: String, newCommit: String) {
-        val intent = Intent(rawActivity, CommitDiffActivity::class.java)
+        val intent = Intent(repoDetailActivity, CommitDiffActivity::class.java)
         intent.putExtra(CommitDiffActivity.OLD_COMMIT, oldCommit)
         intent.putExtra(CommitDiffActivity.NEW_COMMIT, newCommit)
         intent.putExtra(CommitDiffActivity.SHOW_DESCRIPTION, false)
         intent.putExtra(Repo.TAG, repo)
-        rawActivity.startActivity(intent)
+        repoDetailActivity.startActivity(intent)
     }
 
     private fun stageFile(path: String) {

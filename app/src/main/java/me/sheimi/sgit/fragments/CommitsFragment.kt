@@ -77,7 +77,7 @@ class CommitsFragment : BaseFragment(), ActionMode.Callback {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
-        (rawActivity as? RepoDetailActivity)?.setCommitsFragment(this)
+        (rawActivity as? com.manichord.mgit.MainActivity)?.currentRepoDetailHost?.setCommitsFragment(this)
 
         val bundle = arguments ?: return ComposeView(requireContext())
         val repo = bundle.getSerializable(Repo.TAG) as? Repo ?: return ComposeView(requireContext())

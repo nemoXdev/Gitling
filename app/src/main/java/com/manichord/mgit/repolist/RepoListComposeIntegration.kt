@@ -27,7 +27,6 @@ import me.sheimi.android.utils.Profile
 import me.sheimi.sgit.BuildConfig
 import me.sheimi.sgit.MGitApplication
 import me.sheimi.sgit.R
-import me.sheimi.sgit.activities.RepoDetailActivity
 import me.sheimi.sgit.activities.UserSettingsActivity
 import me.sheimi.sgit.database.RepoContract
 import me.sheimi.sgit.database.models.Repo
@@ -82,9 +81,7 @@ fun RepoListComposeContent(
             repoList = repoListSnapshot,
             isGitHubConnected = isGitHubConnected,
             onRepoClick = { repo ->
-                val intent = Intent(activity, RepoDetailActivity::class.java)
-                intent.putExtra(Repo.TAG, repo)
-                activity.startActivity(intent)
+                (activity as com.manichord.mgit.MainActivity).openRepoDetail(repo)
             },
             onRepoLongClick = { repo ->
                 if (repo.repoStatus == RepoContract.REPO_STATUS_NULL) {

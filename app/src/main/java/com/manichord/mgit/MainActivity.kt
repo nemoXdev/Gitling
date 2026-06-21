@@ -6,21 +6,33 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.manichord.mgit.clone.CloneViewModel
+import com.manichord.mgit.repodetail.RepoDetailScreen
+import com.manichord.mgit.repodetail.RepoDetailViewModel
 import com.manichord.mgit.repolist.RepoListComposeContent
 import com.manichord.mgit.repolist.RepoListViewModel
 import com.manichord.mgit.transport.MGitHttpConnectionFactory
+import com.manichord.mgit.ui.components.FragmentHost
+import com.manichord.mgit.ui.theme.AppTheme
 import me.sheimi.android.activities.SheimiFragmentActivity
 import me.sheimi.sgit.MGitApplication
 import me.sheimi.sgit.R
+import me.sheimi.sgit.activities.BranchChooserActivity
 import me.sheimi.sgit.activities.RepoDetailActivity
 import me.sheimi.sgit.activities.explorer.FileExplorerActivity
 import me.sheimi.sgit.database.RepoDbManager
 import me.sheimi.sgit.database.models.Repo
+import me.sheimi.sgit.fragments.CommitsFragment
+import me.sheimi.sgit.fragments.FilesFragment
+import me.sheimi.sgit.fragments.StatusFragment
 import me.sheimi.sgit.repo.tasks.repo.CloneTask
 import me.sheimi.sgit.ssh.PrivateKeyUtils
 import me.sheimi.android.utils.Profile
@@ -47,6 +59,30 @@ class MainActivity : SheimiFragmentActivity() {
 
     private lateinit var cloneViewModel: CloneViewModel
     private lateinit var viewModel: RepoListViewModel
+    private lateinit var navController: NavHostController
+
+    /** Set just before navigating to "repoDetail"; read by that route's setup. Survives
+     * recomposition (it's a plain field, not Compose state) but not an Activity recreate --
+     * MainActivity opts out of recreate-on-rotation below for exactly this reason. */
+    private var pendingRepoForDetail: Repo? = null
+
+    /** The live repoDetail screen's state/dispatch object, if that route is currently showing.
+     * Fragments hosted inside it (Files/Commits/Status) reach this via
+     * `(rawActivity as MainActivity).currentRepoDetailHost` instead of casting rawActivity
+     * itself, since RepoDetailActivity is no longer an Activity type. */
+    var currentRepoDetailHost: RepoDetailActivity? = null
+
+    private val branchChooserLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        val host = currentRepoDetailHost ?: return@registerForActivityResult
+        val branchName = host.repo.branchName
+        if (branchName == null) {
+            showToastMessage(R.string.error_something_wrong)
+            return@registerForActivityResult
+        }
+        host.reset(branchName)
+    }
 
     companion object {
         private const val REQUEST_IMPORT_REPO = 0
@@ -62,7 +98,7 @@ class MainActivity : SheimiFragmentActivity() {
         initUpdatedSSL()
 
         setContent {
-            val navController = rememberNavController()
+            navController = rememberNavController()
             NavHost(navController = navController, startDestination = "repoList") {
                 composable("repoList") {
                     RepoListComposeContent(
@@ -73,10 +109,59 @@ class MainActivity : SheimiFragmentActivity() {
                         onCancelCloneViewClick = { hideCloneView() }
                     )
                 }
+                composable("repoDetail") {
+                    val repo = pendingRepoForDetail
+                    if (repo == null) {
+                        // Got here without a pending repo (e.g. process death) -- bail to the
+                        // list rather than crash.
+                        navController.popBackStack()
+                    } else {
+                        val repoDetailViewModel = ViewModelProvider(this@MainActivity)[RepoDetailViewModel::class.java]
+                        val host = remember(repo) {
+                            RepoDetailActivity(this@MainActivity, repo, repoDetailViewModel).also {
+                                currentRepoDetailHost = it
+                            }
+                        }
+                        val filesFragment = remember(host) { FilesFragment.newInstance(host.repo) }
+                        val commitsFragment = remember(host) { CommitsFragment.newInstance(host.repo, null) }
+                        val statusFragment = remember(host) { StatusFragment.newInstance(host.repo) }
+
+                        DisposableEffect(host) {
+                            onDispose {
+                                if (currentRepoDetailHost === host) {
+                                    currentRepoDetailHost = null
+                                }
+                            }
+                        }
+
+                        AppTheme {
+                            RepoDetailScreen(
+                                viewModel = host.viewModel,
+                                onBackClick = { navController.popBackStack() },
+                                onBranchClick = {
+                                    val intent = Intent(this@MainActivity, BranchChooserActivity::class.java)
+                                    intent.putExtra(Repo.TAG, host.repo)
+                                    branchChooserLauncher.launch(intent)
+                                },
+                                onOperationClick = { index ->
+                                    host.getRepoDelegate().executeAction(index)
+                                },
+                                filesContent = { FragmentHost(supportFragmentManager, filesFragment) },
+                                commitsContent = { FragmentHost(supportFragmentManager, commitsFragment) },
+                                statusContent = { FragmentHost(supportFragmentManager, statusFragment) }
+                            )
+                        }
+                    }
+                }
             }
         }
 
         handleIntent(intent)
+    }
+
+    fun openRepoDetail(repo: Repo) {
+        pendingRepoForDetail = repo
+        navController.navigate("repoDetail")
     }
 
     override fun onNewIntent(intent: Intent) {
@@ -103,10 +188,7 @@ class MainActivity : SheimiFragmentActivity() {
 
             if (repositoriesWithSameRemote.isNotEmpty()) {
                 showToastMessage(R.string.repository_already_present)
-                val detailIntent = Intent(this, RepoDetailActivity::class.java).apply {
-                    putExtra(Repo.TAG, repositoriesWithSameRemote[0])
-                }
-                startActivity(detailIntent)
+                openRepoDetail(repositoriesWithSameRemote[0])
             } else if (Repo.getDir((applicationContext as MGitApplication).prefenceHelper, repoName).exists()) {
                 cloneViewModel.remoteUrl = repoUrlBuilder.toString()
                 showCloneView()
