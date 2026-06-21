@@ -2,11 +2,11 @@ package com.manichord.mgit
 
 import android.Manifest
 import android.app.Activity
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
 import androidx.lifecycle.ViewModelProvider
@@ -14,7 +14,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.manichord.mgit.branchchooser.BranchChooserScreen
+import com.manichord.mgit.branchchooser.BranchChooserViewModel
 import com.manichord.mgit.clone.CloneViewModel
+import com.manichord.mgit.dialogs.MessageDialog
 import com.manichord.mgit.repodetail.RepoDetailScreen
 import com.manichord.mgit.repodetail.RepoDetailViewModel
 import com.manichord.mgit.repolist.RepoListComposeContent
@@ -25,14 +28,16 @@ import com.manichord.mgit.ui.theme.AppTheme
 import me.sheimi.android.activities.SheimiFragmentActivity
 import me.sheimi.sgit.MGitApplication
 import me.sheimi.sgit.R
-import me.sheimi.sgit.activities.BranchChooserActivity
 import me.sheimi.sgit.activities.RepoDetailActivity
 import me.sheimi.sgit.activities.explorer.FileExplorerActivity
 import me.sheimi.sgit.database.RepoDbManager
 import me.sheimi.sgit.database.models.Repo
+import me.sheimi.sgit.dialogs.RenameBranchDialog
 import me.sheimi.sgit.fragments.CommitsFragment
 import me.sheimi.sgit.fragments.FilesFragment
 import me.sheimi.sgit.fragments.StatusFragment
+import me.sheimi.sgit.repo.tasks.repo.CheckoutTask
+import me.sheimi.sgit.repo.tasks.SheimiAsyncTask
 import me.sheimi.sgit.repo.tasks.repo.CloneTask
 import me.sheimi.sgit.ssh.PrivateKeyUtils
 import me.sheimi.android.utils.Profile
@@ -72,17 +77,13 @@ class MainActivity : SheimiFragmentActivity() {
      * itself, since RepoDetailActivity is no longer an Activity type. */
     var currentRepoDetailHost: RepoDetailActivity? = null
 
-    private val branchChooserLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) {
-        val host = currentRepoDetailHost ?: return@registerForActivityResult
-        val branchName = host.repo.branchName
-        if (branchName == null) {
-            showToastMessage(R.string.error_something_wrong)
-            return@registerForActivityResult
-        }
-        host.reset(branchName)
-    }
+    /** Set just before navigating to "branchChooser"; mirrors pendingRepoForDetail above. */
+    private var pendingRepoForBranchChooser: Repo? = null
+
+    /** The live branchChooser screen's ViewModel, if that route is currently showing -- read by
+     * RenameBranchDialog (`(requireActivity() as MainActivity).currentBranchChooserViewModel`)
+     * since BranchChooserActivity no longer exists as a type to cast to. */
+    var currentBranchChooserViewModel: BranchChooserViewModel? = null
 
     companion object {
         private const val REQUEST_IMPORT_REPO = 0
@@ -138,17 +139,43 @@ class MainActivity : SheimiFragmentActivity() {
                             RepoDetailScreen(
                                 viewModel = host.viewModel,
                                 onBackClick = { navController.popBackStack() },
-                                onBranchClick = {
-                                    val intent = Intent(this@MainActivity, BranchChooserActivity::class.java)
-                                    intent.putExtra(Repo.TAG, host.repo)
-                                    branchChooserLauncher.launch(intent)
-                                },
+                                onBranchClick = { openBranchChooser(host.repo) },
                                 onOperationClick = { index ->
                                     host.getRepoDelegate().executeAction(index)
                                 },
                                 filesContent = { FragmentHost(supportFragmentManager, filesFragment) },
                                 commitsContent = { FragmentHost(supportFragmentManager, commitsFragment) },
                                 statusContent = { FragmentHost(supportFragmentManager, statusFragment) }
+                            )
+                        }
+                    }
+                }
+                composable("branchChooser") {
+                    val repo = pendingRepoForBranchChooser
+                    if (repo == null) {
+                        navController.popBackStack()
+                    } else {
+                        val branchChooserViewModel = ViewModelProvider(this@MainActivity)[BranchChooserViewModel::class.java]
+                        remember(repo) {
+                            branchChooserViewModel.setRepo(repo)
+                            currentBranchChooserViewModel = branchChooserViewModel
+                        }
+
+                        DisposableEffect(branchChooserViewModel) {
+                            onDispose {
+                                if (currentBranchChooserViewModel === branchChooserViewModel) {
+                                    currentBranchChooserViewModel = null
+                                }
+                            }
+                        }
+
+                        AppTheme {
+                            BranchChooserScreen(
+                                viewModel = branchChooserViewModel,
+                                onBackClick = { navController.popBackStack() },
+                                onBranchClick = { commitName -> checkoutBranch(repo, commitName) },
+                                onRenameClick = { commitName -> showRenameBranchDialog(repo, commitName) },
+                                onDeleteClick = { commitName -> showDeleteBranchDialog(repo, commitName) }
                             )
                         }
                     }
@@ -162,6 +189,61 @@ class MainActivity : SheimiFragmentActivity() {
     fun openRepoDetail(repo: Repo) {
         pendingRepoForDetail = repo
         navController.navigate("repoDetail")
+    }
+
+    private fun openBranchChooser(repo: Repo) {
+        pendingRepoForBranchChooser = repo
+        navController.navigate("branchChooser")
+    }
+
+    private fun checkoutBranch(repo: Repo, commitName: String) {
+        val checkoutTask = CheckoutTask(repo, commitName, null, object : SheimiAsyncTask.AsyncTaskPostCallback {
+            override fun onPostExecute(isSuccess: Boolean?) {
+                currentRepoDetailHost?.reset(commitName)
+                navController.popBackStack()
+            }
+        })
+        checkoutTask.executeTask()
+    }
+
+    private fun showRenameBranchDialog(repo: Repo, commitName: String) {
+        val pathArg = Bundle()
+        pathArg.putString(RenameBranchDialog.FROM_COMMIT, commitName)
+        pathArg.putSerializable(Repo.TAG, repo)
+        val rbd = RenameBranchDialog()
+        rbd.arguments = pathArg
+        rbd.show(supportFragmentManager, "rename-dialog")
+    }
+
+    private fun showDeleteBranchDialog(repo: Repo, commitName: String) {
+        MessageDialog.show(
+            findViewById(android.R.id.content),
+            getString(R.string.dialog_branch_delete) + " " + commitName,
+            getString(R.string.dialog_branch_delete_msg),
+            getString(R.string.label_delete),
+            getString(R.string.label_cancel),
+            DialogInterface.OnClickListener { _, _ -> deleteBranch(repo, commitName) },
+            DialogInterface.OnClickListener { _, _ -> }
+        )
+    }
+
+    private fun deleteBranch(repo: Repo, commitName: String) {
+        val commitType = Repo.getCommitType(commitName)
+        try {
+            when (commitType) {
+                Repo.COMMIT_TYPE_HEAD -> {
+                    repo.git?.branchDelete()?.setBranchNames(commitName)?.setForce(true)?.call()
+                }
+                Repo.COMMIT_TYPE_TAG -> {
+                    repo.git?.tagDelete()?.setTags(commitName)?.call()
+                }
+            }
+            currentBranchChooserViewModel?.refreshList()
+        } catch (e: Exception) {
+            android.widget.Toast.makeText(
+                this, getString(R.string.cannot_delete_branch, commitName), android.widget.Toast.LENGTH_LONG
+            ).show()
+        }
     }
 
     override fun onNewIntent(intent: Intent) {
