@@ -1,0 +1,1 @@
+Fixed a newly-connected GitHub account not showing up until the app was restarted. The repo list's "+" button no longer says "New repo" -- it covers cloning and importing too.
