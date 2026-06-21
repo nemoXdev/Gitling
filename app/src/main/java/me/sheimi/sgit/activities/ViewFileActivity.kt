@@ -146,7 +146,21 @@ class ViewFileActivity : SheimiFragmentActivity() {
             }
         }
         view.setBackgroundColor(Color.TRANSPARENT)
-        view.loadUrl("file:///android_asset/editor.html")
+
+        // AndroidView's factory runs before Compose's layout pass gives this WebView its real
+        // size (it's 0x0 here) -- loading the page immediately bakes a 0-height viewport into
+        // Chromium's CSS layout for vh/percentage-height rules (CodeMirror needs an explicit
+        // non-zero height container), which never gets reconciled even once the View is later
+        // resized. Deferring the load until the view actually has a size avoids this entirely.
+        if (view.width > 0 && view.height > 0) {
+            view.loadUrl("file:///android_asset/editor.html")
+        } else {
+            view.addOnLayoutChangeListener { v, _, _, _, _, _, _, _, _ ->
+                if (v.width > 0 && v.height > 0 && view.url == null) {
+                    view.loadUrl("file:///android_asset/editor.html")
+                }
+            }
+        }
     }
 
     fun setLanguage(lang: String) {
