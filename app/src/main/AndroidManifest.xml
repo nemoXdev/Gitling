@@ -37,15 +37,6 @@
         <activity android:name=".activities.ViewFileActivity" android:configChanges="orientation|keyboardHidden" android:parentActivityName="com.manichord.mgit.MainActivity">
             <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.manichord.mgit.MainActivity" />
         </activity>
-        <activity android:name=".activities.explorer.PrivateKeyManageActivity" android:label="@string/title_activity_private_key_manage" android:parentActivityName="com.manichord.mgit.MainActivity">
-            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.manichord.mgit.MainActivity" />
-        </activity>
-        <activity android:name=".activities.explorer.ExploreFileActivity" android:label="@string/title_activity_explore_file" android:parentActivityName=".activities.explorer.PrivateKeyManageActivity">
-            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value=".activities.explorer.PrivateKeyManageActivity" />
-        </activity>
-        <activity android:name=".activities.UserSettingsActivity" android:label="@string/title_activity_settings" android:parentActivityName="com.manichord.mgit.MainActivity">
-            <meta-data android:name="android.support.PARENT_ACTIVITY" android:value="com.manichord.mgit.MainActivity" />
-        </activity>
 
         <provider android:name="androidx.core.content.FileProvider" android:authorities="com.maneeshacooray.gitling.fileprovider" android:exported="false" android:grantUriPermissions="true">
             <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/filepaths" />
