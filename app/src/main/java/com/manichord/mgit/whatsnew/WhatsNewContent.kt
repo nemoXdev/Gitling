@@ -13,6 +13,13 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 21,
+            versionName = "1.0.20",
+            highlights = listOf(
+                "Fixed a bug where cloning a new repo after turning on \"Make repos visible to other apps\" still used the old private location instead"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 20,
             versionName = "1.0.19",
             highlights = listOf(
