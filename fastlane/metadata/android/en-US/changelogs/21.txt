@@ -1,0 +1,1 @@
+Fixed a bug where cloning a new repo after turning on "Make repos visible to other apps" still used the old private location instead.

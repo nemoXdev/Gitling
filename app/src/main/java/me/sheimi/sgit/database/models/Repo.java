@@ -503,7 +503,13 @@ public class Repo implements Comparable<Repo>, Serializable {
         }
         File repoDir = preferenceHelper.getRepoRoot();
         if (repoDir == null) {
-            repoDir = FsUtils.getExternalDir(REPO_DIR, true);
+            // Must go through getDefaultRepoRootDir() (not FsUtils.getExternalDir() directly)
+            // so this respects the current useSharedMediaStorage setting -- otherwise every
+            // bare-named repo resolves to the private root regardless of the toggle, which is
+            // exactly backwards for anything cloned/created *after* flipping it (existing repos
+            // get physically moved by moveReposBetweenDefaultRoots(), but that move is wasted if
+            // this method still points at the old location for everyday access).
+            repoDir = getDefaultRepoRootDir();
             Timber.d("PRESET repo path:"+new File(repoDir, localpath).getAbsolutePath());
             return new File(repoDir, localpath);
         } else {

@@ -93,6 +93,7 @@ fun RepoListComposeContent(
                 }
             },
             onCloneClick = {
+                cloneViewModel.refreshCloneLocation()
                 showCloneSheet = true
             },
             onSettingsClick = {
