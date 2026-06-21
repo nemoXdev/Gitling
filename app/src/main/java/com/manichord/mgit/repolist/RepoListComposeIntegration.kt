@@ -17,6 +17,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import com.manichord.mgit.MainActivity
 import com.manichord.mgit.clone.CloneViewModel
 import com.manichord.mgit.models.AccountType
 import com.manichord.mgit.ui.theme.AppTheme
@@ -27,7 +28,6 @@ import me.sheimi.android.utils.Profile
 import me.sheimi.sgit.BuildConfig
 import me.sheimi.sgit.MGitApplication
 import me.sheimi.sgit.R
-import me.sheimi.sgit.activities.UserSettingsActivity
 import me.sheimi.sgit.database.RepoContract
 import me.sheimi.sgit.database.models.Repo
 
@@ -99,12 +99,10 @@ fun RepoListComposeContent(
                 // TODO: Implement search
             },
             onSettingsClick = {
-                activity.startActivity(Intent(activity, UserSettingsActivity::class.java))
+                (activity as MainActivity).openUserSettings()
             },
             onConnectGitHubClick = {
-                val intent = Intent(activity, UserSettingsActivity::class.java)
-                intent.putExtra(UserSettingsActivity.EXTRA_INITIAL_SCREEN, UserSettingsActivity.SCREEN_ACCOUNTS)
-                activity.startActivity(intent)
+                (activity as MainActivity).openUserSettings(initialScreen = "accounts")
             }
         )
 

@@ -4,12 +4,20 @@ import android.Manifest
 import android.app.Activity
 import android.content.DialogInterface
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -20,19 +28,27 @@ import com.manichord.mgit.branchchooser.BranchChooserViewModel
 import com.manichord.mgit.clone.CloneViewModel
 import com.manichord.mgit.diff.CommitDiffScreen
 import com.manichord.mgit.dialogs.MessageDialog
+import com.manichord.mgit.explorer.FileExplorerScreen
 import com.manichord.mgit.repodetail.RepoDetailScreen
 import com.manichord.mgit.repodetail.RepoDetailViewModel
 import com.manichord.mgit.repolist.RepoListComposeContent
 import com.manichord.mgit.repolist.RepoListViewModel
+import com.manichord.mgit.settings.AccountsScreen
+import com.manichord.mgit.settings.SettingsScreen
+import com.manichord.mgit.settings.SettingsViewModel
 import com.manichord.mgit.transport.MGitHttpConnectionFactory
 import com.manichord.mgit.ui.components.FragmentHost
 import com.manichord.mgit.ui.theme.AppTheme
+import com.manichord.mgit.ui.theme.FontOption
+import com.manichord.mgit.util.resolvePrimaryVolumePath
 import me.sheimi.android.activities.SheimiFragmentActivity
 import me.sheimi.sgit.MGitApplication
 import me.sheimi.sgit.R
 import me.sheimi.sgit.activities.CommitDiffActivity
 import me.sheimi.sgit.activities.RepoDetailActivity
+import me.sheimi.sgit.activities.explorer.ExploreFileActivity
 import me.sheimi.sgit.activities.explorer.FileExplorerActivity
+import me.sheimi.sgit.activities.explorer.PrivateKeyManageActivity
 import me.sheimi.sgit.database.RepoDbManager
 import me.sheimi.sgit.database.models.Repo
 import me.sheimi.sgit.dialogs.RenameBranchDialog
@@ -124,6 +140,32 @@ class MainActivity : SheimiFragmentActivity() {
         saveDiffLauncher.launch(intent)
     }
 
+    /** Set just before navigating to "exploreFile"; invoked with the picked file's path, then
+     * cleared, by that route's host before popping back. */
+    private var pendingExploreFileOnPicked: ((String) -> Unit)? = null
+
+    /** The live privateKeyManage screen's state/dispatch object, if that route is currently
+     * showing -- read by EditKeyPasswordDialog/RenameKeyDialog/PrivateKeyGenerate
+     * (`(requireActivity() as MainActivity).currentPrivateKeyManageHost`) since
+     * PrivateKeyManageActivity no longer is an Activity type to cast to. */
+    var currentPrivateKeyManageHost: PrivateKeyManageActivity? = null
+
+    private lateinit var settingsViewModel: SettingsViewModel
+
+    /** Set just before navigating to "userSettings"; mirrors pendingRepoForDetail above. */
+    private var pendingUserSettingsInitialScreen: String? = null
+
+    private val folderPickerLauncher = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? ->
+        uri?.let {
+            val path = resolvePrimaryVolumePath(it)
+            if (path != null) {
+                settingsViewModel.setRepoRoot(path)
+            } else {
+                showToastMessage("That location isn't supported -- please pick a folder on internal storage.")
+            }
+        }
+    }
+
     companion object {
         private const val REQUEST_IMPORT_REPO = 0
     }
@@ -133,6 +175,7 @@ class MainActivity : SheimiFragmentActivity() {
 
         viewModel = ViewModelProvider(this)[RepoListViewModel::class.java]
         cloneViewModel = ViewModelProvider(this)[CloneViewModel::class.java]
+        settingsViewModel = ViewModelProvider(this)[SettingsViewModel::class.java]
 
         PrivateKeyUtils.migratePrivateKeys()
         initUpdatedSSL()
@@ -250,6 +293,111 @@ class MainActivity : SheimiFragmentActivity() {
                         }
                     }
                 }
+                composable("exploreFile") {
+                    val onPicked = pendingExploreFileOnPicked
+                    if (onPicked == null) {
+                        navController.popBackStack()
+                    } else {
+                        val host = remember(onPicked) {
+                            ExploreFileActivity(this@MainActivity) { path ->
+                                onPicked(path)
+                                navController.popBackStack()
+                            }
+                        }
+
+                        // Cleared on dispose rather than inline in the click callback above --
+                        // clearing it there let a stale recomposition (mid pop-transition) read
+                        // pendingExploreFileOnPicked as null and call popBackStack() a second
+                        // time, which corrupted NavHost's back stack state badly enough to blank
+                        // the whole screen with no exception logged anywhere.
+                        DisposableEffect(host) {
+                            onDispose { pendingExploreFileOnPicked = null }
+                        }
+
+                        BackHandler {
+                            if (!host.goUpOrFalse()) navController.popBackStack()
+                        }
+
+                        AppTheme {
+                            Box {
+                                FileExplorerScreen(
+                                    title = host.screenTitle,
+                                    currentPath = host.currentDir.path,
+                                    files = host.filesState,
+                                    showUpRow = host.currentDir.parentFile != null,
+                                    onUpClick = { host.currentDir.parentFile?.let { host.setCurrentDir(it) } },
+                                    onBackClick = { navController.popBackStack() },
+                                    onItemClick = { host.onFileClick(it) },
+                                    onItemLongClick = { host.onFileLongClick(it) },
+                                    selectedFile = host.selectedFile
+                                )
+                                host.Overlay()
+                            }
+                        }
+                    }
+                }
+                composable("privateKeyManage") {
+                    val host = remember {
+                        PrivateKeyManageActivity(this@MainActivity).also { currentPrivateKeyManageHost = it }
+                    }
+
+                    DisposableEffect(host) {
+                        onDispose {
+                            if (currentPrivateKeyManageHost === host) {
+                                currentPrivateKeyManageHost = null
+                            }
+                        }
+                    }
+
+                    BackHandler {
+                        if (!host.goUpOrFalse()) navController.popBackStack()
+                    }
+
+                    AppTheme {
+                        Box {
+                            FileExplorerScreen(
+                                title = host.screenTitle,
+                                currentPath = host.currentDir.path,
+                                files = host.filesState,
+                                showUpRow = host.currentDir.parentFile != null,
+                                onUpClick = { host.currentDir.parentFile?.let { host.setCurrentDir(it) } },
+                                onBackClick = { navController.popBackStack() },
+                                onItemClick = { host.onFileClick(it) },
+                                onItemLongClick = { host.onFileLongClick(it) },
+                                selectedFile = host.selectedFile,
+                                actions = { host.TopBarActions() }
+                            )
+                            host.Overlay()
+                        }
+                    }
+                }
+                composable("userSettings") {
+                    var currentScreen by remember { mutableStateOf(pendingUserSettingsInitialScreen ?: "settings") }
+                    val useDynamicColor by settingsViewModel.useDynamicColor.observeAsState(false)
+                    val fontOption by settingsViewModel.fontOption.observeAsState(FontOption.DEFAULT)
+
+                    AppTheme(useDynamicColor = useDynamicColor, fontOption = fontOption) {
+                        Crossfade(targetState = currentScreen) { screen ->
+                            when (screen) {
+                                "settings" -> SettingsScreen(
+                                    viewModel = settingsViewModel,
+                                    onBackClick = { navController.popBackStack() },
+                                    onManageAccountsClick = { currentScreen = "accounts" },
+                                    onManageSshKeysClick = { openPrivateKeyManage() },
+                                    onFeedbackClick = {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.feedback_url)))
+                                        startActivity(intent)
+                                    },
+                                    onRepoRootClick = { folderPickerLauncher.launch(null) }
+                                )
+                                "accounts" -> AccountsScreen(
+                                    viewModel = settingsViewModel,
+                                    onBackClick = { currentScreen = "settings" }
+                                )
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -269,6 +417,20 @@ class MainActivity : SheimiFragmentActivity() {
     fun openCommitDiff(oldCommit: String?, newCommit: String, showDescription: Boolean, repo: Repo?) {
         pendingCommitDiffArgs = CommitDiffArgs(oldCommit, newCommit, showDescription, repo)
         navController.navigate("commitDiff")
+    }
+
+    fun openExploreFile(onPicked: (String) -> Unit) {
+        pendingExploreFileOnPicked = onPicked
+        navController.navigate("exploreFile")
+    }
+
+    fun openPrivateKeyManage() {
+        navController.navigate("privateKeyManage")
+    }
+
+    fun openUserSettings(initialScreen: String = "settings") {
+        pendingUserSettingsInitialScreen = initialScreen
+        navController.navigate("userSettings")
     }
 
     private fun checkoutBranch(repo: Repo, commitName: String) {
@@ -369,6 +531,8 @@ class MainActivity : SheimiFragmentActivity() {
         } else {
             checkAndRequestRequiredPermissions(applicationContext, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
+        // Refresh accounts in case the user completed GitHub OAuth in the browser
+        settingsViewModel.refreshAccounts()
     }
 
     private fun initUpdatedSSL() {
