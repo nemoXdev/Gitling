@@ -52,11 +52,18 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
     init {
         visible.value = false
         initLocal.value = false
-        // Display-only -- repos always clone into the app-private default root (no folder
-        // picker; see CloneView), so this just shows the user where that is.
-        cloneLocation.value = Repo.getDefaultRepoRootDir().absolutePath
+        refreshCloneLocation()
         refreshAccounts()
         accountManager.accountsChanged.observeForever(accountsChangedObserver)
+    }
+
+    /** Display-only -- repos always clone into the current default root (no folder picker; see
+     * CloneView), so this just shows the user where that currently is. Must be re-read every
+     * time the clone sheet opens, not just once at ViewModel construction (this ViewModel
+     * outlives any single sheet open/close, and the default root can change via the "make repos
+     * visible to other apps" Settings toggle without the app restarting in between). */
+    fun refreshCloneLocation() {
+        cloneLocation.value = Repo.getDefaultRepoRootDir().absolutePath
     }
 
     override fun onCleared() {
@@ -96,7 +103,10 @@ class CloneViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun show(show : Boolean) {
-        if (show) refreshAccounts()
+        if (show) {
+            refreshAccounts()
+            refreshCloneLocation()
+        }
         visible.value = show
     }
 
