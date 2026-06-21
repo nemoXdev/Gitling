@@ -13,6 +13,14 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 12,
+            versionName = "1.0.11",
+            highlights = listOf(
+                "Fixed a newly-connected GitHub account not showing up until the app was restarted",
+                "The repo list's \"+\" button no longer says \"New repo\" -- it covers cloning and importing too"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 11,
             versionName = "1.0.10",
             highlights = listOf(
