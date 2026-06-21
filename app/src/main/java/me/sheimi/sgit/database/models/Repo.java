@@ -513,19 +513,40 @@ public class Repo implements Comparable<Repo>, Serializable {
         }
     }
 
-    public static void setLocalRepoRoot(Context context, File repoRoot) {
+    /** The fixed, app-private external-files directory all repos live under by default --
+     * requires no storage permission on any Android version, since it's the app's own sandbox.
+     * Used both for display (Settings, clone destination) and to detect a stale custom root
+     * left over from before repos were restricted to this directory. */
+    public static File getDefaultRepoRootDir() {
+        return FsUtils.getExternalDir(REPO_DIR, true);
+    }
+
+    /** One-time migration for anyone updating from a build that still let them set a custom
+     * repo root: that root is no longer reachable without MANAGE_EXTERNAL_STORAGE, which this
+     * app no longer requests. Mirrors the bookkeeping the old (now-removed) setLocalRepoRoot()
+     * did when switching roots the other way -- any repo still using a bare, root-relative
+     * localPath has its old absolute location baked in via the external:// marker before the
+     * preference is cleared, so it keeps pointing at where it actually lives (now inaccessible,
+     * but correctly so) instead of silently resolving against the new default root, which could
+     * coincidentally collide with an unrelated same-named repo created there later.
+     *
+     * @return true if a migration actually happened (i.e. there was a custom root configured) */
+    public static boolean migrateAwayFromCustomRoot(Context context) {
         PreferenceHelper prefs = ((MGitApplication) context.getApplicationContext()).getPrefenceHelper();
         File oldRoot = prefs.getRepoRoot();
-        prefs.setRepoRoot(repoRoot.getAbsolutePath());
+        if (oldRoot == null) {
+            return false;
+        }
 
-        // need to make any existing "internal" repos "external" so that their paths are still correct
-        List<Repo> allRepos = Repo.getRepoList(context,  RepoDbManager.queryAllRepo());
-        for (Repo repo:allRepos) {
+        List<Repo> allRepos = Repo.getRepoList(context, RepoDbManager.queryAllRepo());
+        for (Repo repo : allRepos) {
             if (!repo.isExternal()) {
                 repo.mLocalPath = EXTERNAL_PREFIX + oldRoot.getAbsolutePath() + "/" + repo.mLocalPath;
                 RepoDbManager.setLocalPath(repo.getID(), repo.mLocalPath);
             }
         }
+        prefs.setRepoRoot("");
+        return true;
     }
 
     public File getDir() {

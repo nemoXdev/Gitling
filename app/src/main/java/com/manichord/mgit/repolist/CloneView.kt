@@ -6,7 +6,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,16 +14,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import android.net.Uri
-import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.ui.platform.LocalContext
 import com.manichord.mgit.clone.CloneViewModel
 import com.manichord.mgit.models.Account
 import com.manichord.mgit.models.AccountType
 import com.manichord.mgit.models.GitHubRepo
-import com.manichord.mgit.util.resolvePrimaryVolumePath
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -50,23 +43,6 @@ fun CloneView(
     val localRepoNameError by viewModel.localRepoNameError.observeAsState()
 
     val cloneLocation by viewModel.cloneLocation.observeAsState("")
-    val context = LocalContext.current
-    val folderPickerLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentTree()
-    ) { uri: Uri? ->
-        uri?.let {
-            val path = resolvePrimaryVolumePath(it)
-            if (path != null) {
-                viewModel.cloneLocation.value = path
-            } else {
-                Toast.makeText(
-                    context,
-                    "That location isn't supported -- please pick a folder on internal storage.",
-                    Toast.LENGTH_LONG
-                ).show()
-            }
-        }
-    }
 
     Column(
         modifier = modifier
@@ -179,15 +155,6 @@ fun CloneView(
                     Text(text = localRepoNameError!!)
                 } else {
                     Text(text = "Cloning to: $cloneLocation/$localRepoName")
-                }
-            },
-            trailingIcon = {
-                IconButton(onClick = { folderPickerLauncher.launch(null) }) {
-                    Icon(
-                        imageVector = Icons.Default.FolderOpen,
-                        contentDescription = "Change Parent Folder",
-                        tint = MaterialTheme.colorScheme.primary
-                    )
                 }
             },
             keyboardOptions = KeyboardOptions(

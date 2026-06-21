@@ -152,4 +152,16 @@ public class Profile {
         String key = context.getString(R.string.pref_key_dismissed_update_version);
         getProfileSharedPreference(context).edit().putString(key, version).apply();
     }
+
+    /** Set once, right after Repo.migrateAwayFromCustomRoot() actually migrates something --
+     * read by the repo list to show a one-time explanation, then cleared. */
+    public static boolean getPendingStorageMigrationNotice(Context context) {
+        String key = context.getString(R.string.pref_key_pending_storage_migration_notice);
+        return getProfileSharedPreference(context).getBoolean(key, false);
+    }
+
+    public static void setPendingStorageMigrationNotice(Context context, boolean pending) {
+        String key = context.getString(R.string.pref_key_pending_storage_migration_notice);
+        getProfileSharedPreference(context).edit().putBoolean(key, pending).apply();
+    }
 }

@@ -118,7 +118,6 @@
     <string name="dialog_open_remote">Open remote url</string>
     <string name="dialog_open_remote_title">Choose app to open %s remote</string>
     <string name="dialog_open_remote_no_app_available">No Apps available to open the url</string>
-    <string name="dialog_permission_not_granted">Gitling requires that you grant it write access to be able to write local git repos to your storage, until you do this Gitling will NOT work properly.</string>
 
     <!-- Others -->
     <string name="pull_msg_init">Pulling … </string>
@@ -171,6 +170,7 @@
     <string name="pref_key_last_seen_version_code" translatable="false">last_seen_version_code</string>
     <string name="pref_key_last_update_check_time" translatable="false">last_update_check_time</string>
     <string name="pref_key_dismissed_update_version" translatable="false">dismissed_update_version</string>
+    <string name="pref_key_pending_storage_migration_notice" translatable="false">pending_storage_migration_notice</string>
     <string name="action_git_profile">Git Profile</string>
     <string name="action_open_in_other_app">Open in other apps</string>
     <string name="action_add_private_key">Add Private Key</string>
@@ -202,6 +202,4 @@
     <string name="preference_eng_lang">English Language</string>
     <string name="preference_eng_lang_summary">Use English instead of the default language</string>
     <string name="pref_key_use_english" translatable="false">use.english</string>
-    <string name="dialog_access_all_files_title">Access Gitling to access all files</string>
-    <string name="dialog_access_all_files_msg">To function correctly and be able to do things like finding modified files in your git working directory Gitling needs permission to access all files.\n\nGrant permission?</string>
 </resources>
