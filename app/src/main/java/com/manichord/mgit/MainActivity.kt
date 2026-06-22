@@ -81,8 +81,12 @@ class MainActivity : SheimiFragmentActivity() {
     private lateinit var navController: NavHostController
 
     /** Set just before navigating to "repoDetail"; read by that route's setup. Survives
-     * recomposition (it's a plain field, not Compose state) but not an Activity recreate --
-     * MainActivity opts out of recreate-on-rotation below for exactly this reason. */
+     * recomposition (it's a plain field, not Compose state) and, since onSaveInstanceState below
+     * persists it, an Activity recreate too -- needed because NavController's own back-stack
+     * state *does* survive recreation (via its internal rememberSaveable), so without this, a
+     * relaunch (e.g. a font-scale change, which isn't in this Activity's configChanges) would
+     * land back on "repoDetail" with this null, bailing out to a blank screen instead of
+     * properly restoring the repo that was actually showing. */
     private var pendingRepoForDetail: Repo? = null
 
     /** The live repoDetail screen's state/dispatch object, if that route is currently showing.
@@ -107,7 +111,7 @@ class MainActivity : SheimiFragmentActivity() {
         val newCommit: String,
         val showDescription: Boolean,
         val repo: Repo?
-    )
+    ) : java.io.Serializable
 
     /** The live commitDiff screen's state/dispatch object, if that route is currently showing --
      * read by saveDiffLauncher's callback below since CommitDiffActivity no longer is a
@@ -151,6 +155,17 @@ class MainActivity : SheimiFragmentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // Restore navigation state lost to an Activity recreate (see pendingRepoForDetail's doc
+        // comment) before the first setContent below composes anything -- must happen here, not
+        // later, so the very first composition of e.g. "repoDetail" already sees a non-null repo
+        // rather than bailing out once and only picking up the restored value on a second pass.
+        if (savedInstanceState != null) {
+            pendingRepoForDetail = savedInstanceState.getSerializable(KEY_PENDING_REPO_FOR_DETAIL) as? Repo
+            pendingRepoForBranchChooser = savedInstanceState.getSerializable(KEY_PENDING_REPO_FOR_BRANCH_CHOOSER) as? Repo
+            pendingCommitDiffArgs = savedInstanceState.getSerializable(KEY_PENDING_COMMIT_DIFF_ARGS) as? CommitDiffArgs
+            pendingUserSettingsInitialScreen = savedInstanceState.getString(KEY_PENDING_USER_SETTINGS_INITIAL_SCREEN)
+        }
 
         viewModel = ViewModelProvider(this)[RepoListViewModel::class.java]
         cloneViewModel = ViewModelProvider(this)[CloneViewModel::class.java]
@@ -512,6 +527,22 @@ class MainActivity : SheimiFragmentActivity() {
         // directly, which fires the moment an account is actually saved rather than depending on
         // Activity resume timing.)
         settingsViewModel.refreshAccounts()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // See pendingRepoForDetail's doc comment -- restored in onCreate above.
+        outState.putSerializable(KEY_PENDING_REPO_FOR_DETAIL, pendingRepoForDetail)
+        outState.putSerializable(KEY_PENDING_REPO_FOR_BRANCH_CHOOSER, pendingRepoForBranchChooser)
+        outState.putSerializable(KEY_PENDING_COMMIT_DIFF_ARGS, pendingCommitDiffArgs)
+        outState.putString(KEY_PENDING_USER_SETTINGS_INITIAL_SCREEN, pendingUserSettingsInitialScreen)
+    }
+
+    private companion object {
+        const val KEY_PENDING_REPO_FOR_DETAIL = "pending_repo_for_detail"
+        const val KEY_PENDING_REPO_FOR_BRANCH_CHOOSER = "pending_repo_for_branch_chooser"
+        const val KEY_PENDING_COMMIT_DIFF_ARGS = "pending_commit_diff_args"
+        const val KEY_PENDING_USER_SETTINGS_INITIAL_SCREEN = "pending_user_settings_initial_screen"
     }
 
     private fun initUpdatedSSL() {
