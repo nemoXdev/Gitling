@@ -260,9 +260,19 @@ code {
   margin-bottom: var(--space-4);
 }
 .hero img.hero-icon {
+  /* display:block + margin-inline:auto, not relying on the parent's
+     text-align:center -- img defaults to display:inline, and an inline
+     replaced element (84px tall) sharing a line with the inline-block
+     badge (31px tall) gets positioned by baseline alignment between two
+     very differently-sized boxes, which produced a real, reproducible
+     ~134px horizontal offset between their visual centers (confirmed via
+     getBoundingClientRect() over a live CDP connection, not a screenshot
+     artifact). Making it a block-level box removes it from that shared
+     inline formatting context entirely. */
+  display: block;
   width: 84px;
   height: 84px;
-  margin-bottom: var(--space-4);
+  margin: 0 auto var(--space-4);
   filter: drop-shadow(0 8px 24px rgba(0,0,0,0.25));
 }
 .hero h1 {
