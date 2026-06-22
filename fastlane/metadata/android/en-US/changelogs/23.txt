@@ -1,0 +1,1 @@
+Fixed a bug where the app could land on a blank screen after Android relaunches it (e.g. after certain system display/font settings change) -- it now correctly reopens to wherever you were.
