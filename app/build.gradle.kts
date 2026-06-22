@@ -12,8 +12,8 @@ android {
         applicationId = "com.maneeshacooray.gitling"
         minSdk = 23
         targetSdk = 37
-        versionCode = 25
-        versionName = "1.0.24"
+        versionCode = 26
+        versionName = "1.0.25"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled = true
@@ -82,11 +82,18 @@ android {
 // this, two CI environments with different host JDKs can produce non-byte-identical APKs from
 // the same source (different D8 dexing output, different java.util.zip/DEFLATE compression
 // behavior for the same input bytes) even though both builds are otherwise correct -- this is
-// what broke F-Droid's reproducible-build verification: GitHub Actions' release workflow
-// explicitly uses Temurin 17, while F-Droid's build container defaults to OpenJDK 21.
+// what broke F-Droid's reproducible-build verification.
+//
+// Pinned to 21, not 17, specifically because F-Droid's build container already has JDK 21
+// preinstalled and its build policy's "suss" scanner hard-blocks the foojay-resolver plugin
+// (org.gradle.toolchains.foojay-resolver-convention) needed to *auto-download* a missing JDK --
+// F-Droid's builds aren't allowed to fetch extra toolchains over the network mid-build. Pinning
+// to a version already present on both sides (GitHub Actions' release workflow now also
+// installs Temurin 21, see .github/workflows/release.yml) means plain toolchain auto-detection
+// (no downloading, no foojay) satisfies this on both CI environments.
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 

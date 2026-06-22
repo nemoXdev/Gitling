@@ -13,6 +13,13 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 26,
+            versionName = "1.0.25",
+            highlights = listOf(
+                "Housekeeping release -- switches the build's required JDK version to one already available on F-Droid's build servers (fixes a build policy conflict there), no user-facing changes"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 25,
             versionName = "1.0.24",
             highlights = listOf(
