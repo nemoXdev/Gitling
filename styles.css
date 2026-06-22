@@ -232,12 +232,12 @@ code {
 .hero::before {
   content: "";
   position: absolute;
-  top: -20%;
-  right: -10%;
-  width: 60vw;
-  height: 60vw;
-  max-width: 700px;
-  max-height: 700px;
+  top: -15%;
+  right: -5%;
+  width: 30vw;
+  height: 30vw;
+  max-width: 280px;
+  max-height: 280px;
   background: url("assets/mark-only.svg") center / contain no-repeat;
   opacity: 0.1;
   transform: rotate(8deg);
