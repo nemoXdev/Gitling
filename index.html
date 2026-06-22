@@ -1,139 +1,206 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gitling — Git client for Android</title>
+<meta name="description" content="Gitling is a Git client for Android, built with Jetpack Compose and Material 3 Expressive. Open source, GPLv3, no tracking.">
+<meta name="theme-color" content="#1B5E3A">
 
-  <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="Sgit : unofficial git client for android" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="256x256" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://maneeshacooray.github.io/Gitling/">
+<meta property="og:title" content="Gitling — Git client for Android">
+<meta property="og:description" content="Git client built with Jetpack Compose and Material 3 Expressive. Open source, GPLv3, no tracking.">
+<meta property="og:image" content="https://maneeshacooray.github.io/Gitling/assets/feature.png">
+<meta property="og:image:width" content="1024">
+<meta property="og:image:height" content="500">
 
-    <title>Sgit</title>
-  </head>
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Gitling — Git client for Android">
+<meta name="twitter:description" content="Git client built with Jetpack Compose and Material 3 Expressive.">
+<meta name="twitter:image" content="https://maneeshacooray.github.io/Gitling/assets/feature.png">
 
-  <body>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/sheimi/SGit">View on GitHub</a>
+<a class="skip-link" href="#main">Skip to main content</a>
 
-          <h1 id="project_title">Sgit</h1>
-          <h2 id="project_tagline">unofficial git client for android</h2>
+<nav class="site-nav">
+  <div class="container">
+    <a class="brand" href="#main">
+      <img src="favicon.svg" alt="" width="28" height="28">
+      Gitling
+    </a>
+    <ul class="nav-links">
+      <li><a href="#features"><span class="nav-text">Features</span></a></li>
+      <li><a href="#screenshots"><span class="nav-text">Screenshots</span></a></li>
+      <li><a href="#getting-started"><span class="nav-text">Get started</span></a></li>
+      <li><a href="#download"><span class="nav-text">Download</span></a></li>
+      <li>
+        <a class="icon-link" href="https://github.com/maneeshacooray/Gitling" aria-label="View source on GitHub">
+          <svg viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+        </a>
+      </li>
+    </ul>
+  </div>
+</nav>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/sheimi/SGit/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/sheimi/SGit/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
+<main id="main">
+
+  <header class="hero">
+    <div class="container">
+      <span class="badge">Open source · GPLv3</span>
+      <img class="hero-icon" src="favicon.svg" alt="" width="96" height="96">
+      <h1>Gitling</h1>
+      <p class="tagline">Git client built with Jetpack Compose and Material 3 Expressive</p>
+      <p class="lede">It's a fork of <a href="https://github.com/maks/MGit">MGit</a> (itself a continuation of <a href="https://github.com/sheimi/SGit">SGit</a>), modernized with a current Android toolchain, a from-scratch Compose UI, one-tap GitHub sign-in, and a new identity.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/maneeshacooray/Gitling/releases">Download APK</a>
+        <a class="btn btn-outline" href="https://github.com/maneeshacooray/Gitling">View on GitHub</a>
+      </div>
     </div>
+  </header>
 
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
-        <h1>
-<a name="sgit" class="anchor" href="#sgit"><span class="octicon octicon-link"></span></a>SGIT</h1>
-
-<p>an unofficial git client for android</p>
-
-<h2>
-<a name="note" class="anchor" href="#note"><span class="octicon octicon-link"></span></a>Note</h2>
-
-<ul>
-<li>All repositories are stored in [sdcard dir]/Android/data/me.sheimi.sgit/files/repo, you could manually backup repositories if you what to delete this app.</li>
-<li>Here is the github repo of this project: <a href="https://github.com/sheimi/SGit">https://github.com/sheimi/SGit</a>
-</li>
-<li>If you have any bugs (or crashes) and want to help improve this project, please open an issue in github and describe how the bug was generated so that I can make the bugs reappear and fix them.</li>
-<li>This app is for android 4.x. Even though it support android 2.x, I do not have time and devices to test for it.</li>
-</ul><h2>
-<a name="to-do-list" class="anchor" href="#to-do-list"><span class="octicon octicon-link"></span></a>To Do List</h2>
-
-<ul>
-<li>private key passphrase</li>
-<li>dark theme</li>
-<li>related commits to a file</li>
-<li>commit graph (low priority)</li>
-</ul><h2>
-<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h2>
-
-<ul>
-<li>add remote repo</li>
-<li>external repo</li>
-<li>initial empty repo</li>
-<li>clone a remote repo</li>
-<li>pull from origin</li>
-<li>delete local repo</li>
-<li>browse files</li>
-<li>browse commit messages (short)</li>
-<li>checkout branches and tags</li>
-<li>http/https/ssh are supported (without private key passphrase)</li>
-<li>username/password authentication is supported</li>
-<li>search from local repositories</li>
-<li>private keys management</li>
-<li>manually choose code's language</li>
-<li>git diff between commits (to be enhanced)</li>
-<li>import copied repositories (that is, you can copy a repository from computer and import to SGit)</li>
-<li>checkout remote branches</li>
-<li>merge branches</li>
-<li>push merged content</li>
-<li>edit file (you must have some app that can edit file)</li>
-<li>commit and push changed files (commit all changes)</li>
-<li>committer information</li>
-<li>prompt for password</li>
-<li>choose not to save password and username (will not be saved in disk but may be temporarily saved in memory)</li>
-<li>git status</li>
-<li>cancel when cloning</li>
-<li>add modified file to stage</li>
-<li>git rebase</li>
-<li>git cherry pick</li>
-<li>git checkout  (reset changes of a file)</li>
-</ul><p><a href="https://play.google.com/store/apps/details?id=me.sheimi.sgit"><img alt="Android app on Google Play" src="https://developer.android.com/images/brand/en_app_rgb_wo_45.png"></a></p>
-
-<h2>
-<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h2>
-
-<p><a href="./LICENSE">GPLv3</a></p>
-
-<h2>
-<a name="help--donate" class="anchor" href="#help--donate"><span class="octicon octicon-link"></span></a>Help &amp; Donate</h2>
-
-<p>If you want to help improve this project you could fork SGit and send pull
-request.</p>
-
-<p>If you want to donate this project, you can donate via paypal</p>
-
-<p><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
-<input type="hidden" name="cmd" value="_s-xclick">
-<input type="hidden" name="encrypted" value="-----BEGIN PKCS7-----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-----END PKCS7-----
-">
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" alt="PayPal - The safer, easier way to pay online!">
-<img alt="" border="0" src="https://www.paypalobjects.com/en_US/i/scr/pixel.gif" width="1" height="1">
-</form>
-</p>
-
-<p>Or donate via <a target="_blank" href="https://me.alipay.com/sheimi">支付宝</a></p>
-      </section>
+  <section class="distribution">
+    <div class="container dist-grid">
+      <div class="dist-card featured">
+        <h3>GitHub Releases</h3>
+        <p>Direct download, always available</p>
+        <a class="btn btn-primary-on-light" href="https://github.com/maneeshacooray/Gitling/releases">Download APK</a>
+      </div>
+      <div class="dist-card">
+        <h3>F-Droid</h3>
+        <p>Recently added — may take a day to appear after the latest build</p>
+        <a class="btn btn-outline-on-light" href="https://f-droid.org/packages/com.maneeshacooray.gitling/">View on F-Droid</a>
+      </div>
+      <!-- TODO(play-store): add a Google Play badge once the closed-testing
+           period completes and the listing graduates to production. There is
+           nothing public to link to yet, do not add a badge before then. -->
     </div>
+  </section>
 
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">Sgit is maintained by <a href="https://github.com/maks">Maksim Lin</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
-      </footer>
+  <section id="features" class="features">
+    <div class="container">
+      <h2>Features</h2>
+      <div class="features-grid">
+        <div class="feature-item"><span class="check">✓</span><span>Clone, create, and delete local repositories</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>One-tap Connect with GitHub (OAuth Device Flow) — no manual token/password handling for GitHub remotes</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>HTTP/HTTPS/SSH, including SSH with private-key passphrase</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Username/password and personal access token authentication for any Git host</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Browse files and commit history, <code>git diff</code> between commits</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Checkout, create, and merge local/remote branches and tags</span></div>
+        <div class="feature-item"><span class="check">✓</span><span><code>git status</code>, staging, <code>git rebase</code>, <code>git cherry-pick</code>, <code>git checkout &lt;file&gt;</code></span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Private key generation and management</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Import an existing repository from device storage</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Light/dark mode that follows the system, with a choice between a fixed brand color or wallpaper-based Material You dynamic color</span></div>
+      </div>
+      <p class="features-note">Gitling doesn't include an internal text editor — to edit files, you'll need an editor app installed that supports opening files via Android's File Provider mechanism (most code/text editor apps do).</p>
     </div>
+  </section>
 
-              <script type="text/javascript">
-            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
-            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
-          </script>
-          <script type="text/javascript">
-            try {
-              var pageTracker = _gat._getTracker("UA-35791128-3");
-            pageTracker._trackPageview();
-            } catch(err) {}
-          </script>
+  <section id="screenshots" class="screenshots">
+    <div class="container">
+      <h2>See it in action</h2>
+      <div class="screenshot-row">
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/repo_list.png"><img src="assets/screenshots/repo_list.png" alt="Repository list" loading="lazy"></a>
+          <figcaption>Repository list</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/commit_graph.png"><img src="assets/screenshots/commit_graph.png" alt="Full branch/merge commit graph" loading="lazy"></a>
+          <figcaption>Full branch/merge commit graph</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/settings.png"><img src="assets/screenshots/settings.png" alt="Settings" loading="lazy"></a>
+          <figcaption>Settings</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/file_viewer.png"><img src="assets/screenshots/file_viewer.png" alt="File viewer with syntax highlighting" loading="lazy"></a>
+          <figcaption>File viewer with syntax highlighting</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/commit_diff.png"><img src="assets/screenshots/commit_diff.png" alt="Commit diff view" loading="lazy"></a>
+          <figcaption>Commit diff view</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
 
+  <section id="getting-started" class="getting-started">
+    <div class="container">
+      <h2>Getting started</h2>
 
-  </body>
+      <h3>Clone a remote repository</h3>
+      <ol>
+        <li>Tap the <code>+</code> button to add a new repository</li>
+        <li>Enter the remote URL (see formats below)</li>
+        <li>Enter a local repository name — this is <strong>not</strong> the full path; Gitling stores all repositories under a common root directory (changeable in Settings)</li>
+        <li>Tap <code>Clone</code></li>
+        <li>If required, you'll be prompted for credentials — or connect your GitHub account once in Settings to skip this for GitHub remotes</li>
+      </ol>
+
+      <h3>Create a local repository</h3>
+      <ol>
+        <li>Tap the <code>+</code> button to add a new repository</li>
+        <li>Choose <code>Init Local</code> to create a local repository</li>
+        <li>Enter a name when prompted</li>
+      </ol>
+
+      <h3>URL formats</h3>
+      <p><strong>SSH</strong></p>
+      <ul>
+        <li>Standard port (22): <code>ssh://username@server_name/path/to/repo</code></li>
+        <li>Non-standard port: <code>ssh://username@server_name:port/path/to/repo</code></li>
+        <li>A username is required.</li>
+      </ul>
+      <p><strong>HTTP(S)</strong></p>
+      <ul>
+        <li><code>https://server_name/path/to/repo</code></li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="download" class="download-band">
+    <div class="container">
+      <h2>Get Gitling</h2>
+      <div class="dist-grid">
+        <div class="dist-card featured">
+          <h3>GitHub Releases</h3>
+          <p>Direct download, always available</p>
+          <a class="btn btn-primary" href="https://github.com/maneeshacooray/Gitling/releases">Download APK</a>
+        </div>
+        <div class="dist-card">
+          <h3>F-Droid</h3>
+          <p>Recently added — may take a day to appear after the latest build</p>
+          <a class="btn btn-outline" href="https://f-droid.org/packages/com.maneeshacooray.gitling/">View on F-Droid</a>
+        </div>
+        <!-- TODO(play-store): add a Google Play badge here too once the listing
+             reaches production. -->
+      </div>
+      <p><a class="muted-link" href="https://github.com/maneeshacooray/Gitling/issues">Found a bug? Open an issue</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <p>GPLv3 — see <a href="https://github.com/maneeshacooray/Gitling/blob/master/LICENSE">LICENSE</a>.</p>
+    <p>This project is a fork of <a href="https://github.com/maks/MGit">MGit</a>, itself a fork of <a href="https://github.com/sheimi/SGit">SGit</a>. Credit to both for the original implementation this continues to build on.</p>
+    <p>Default typeface <a href="https://github.com/tokotype/PlusJakartaSans">Plus Jakarta Sans</a> (OFL-1.1). <a href="https://github.com/rsms/inter">Inter</a> and <a href="https://github.com/JetBrains/JetBrainsMono">JetBrains Mono</a> available as alternatives, both also OFL-1.1.</p>
+    <ul class="footer-links">
+      <li><a href="https://github.com/maneeshacooray/Gitling">Source</a></li>
+      <li><a href="https://github.com/maneeshacooray/Gitling/issues">Issues</a></li>
+      <li><a href="privacy.html">Privacy Policy</a></li>
+      <li><a href="https://github.com/maneeshacooray/Gitling/releases">Releases</a></li>
+    </ul>
+  </div>
+</footer>
+
+</body>
 </html>
