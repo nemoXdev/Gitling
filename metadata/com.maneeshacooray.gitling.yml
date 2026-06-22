@@ -24,9 +24,9 @@ Repo: https://github.com/maneeshacooray/Gitling
 Binaries: https://github.com/maneeshacooray/Gitling/releases/download/v%v/app-release.apk
 
 Builds:
-  - versionName: 1.0.25
-    versionCode: 26
-    commit: b43e1593d57f070551f7d2fd5348accae4747fe2
+  - versionName: 1.0.26
+    versionCode: 27
+    commit: c6b5921faa4a0701ae3a639fc2e0ad2110742969
     subdir: app
     gradle:
       - yes
@@ -35,5 +35,5 @@ AllowedAPKSigningKeys: b1868505e313bc8b534d0bd09ae11b72f4c81a28a4a0b8972566b360f
 
 AutoUpdateMode: Version
 UpdateCheckMode: Tags ^v1\.0\.\d+$
-CurrentVersion: 1.0.25
-CurrentVersionCode: 26
+CurrentVersion: 1.0.26
+CurrentVersionCode: 27
