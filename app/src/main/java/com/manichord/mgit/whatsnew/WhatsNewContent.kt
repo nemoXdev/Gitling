@@ -14,9 +14,9 @@ object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
             versionCode = 32,
-            versionName = "1.0.31",
+            versionName = "1.0.32",
             highlights = listOf(
-                "Fixed a crash tapping a commit in a file's commit-history tab"
+                "Redesigned commit rows to show author and date in a two-line layout"
             )
         ),
         WhatsNewEntry(
