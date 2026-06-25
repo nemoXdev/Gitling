@@ -1,0 +1,1 @@
+Fixed text overflow on long branch, remote, and file names, and on long committer names in the repo list.
