@@ -13,6 +13,13 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 33,
+            versionName = "1.0.33",
+            highlights = listOf(
+                "Fixed text overflow on long branch/remote/file names and committer names"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 32,
             versionName = "1.0.32",
             highlights = listOf(
