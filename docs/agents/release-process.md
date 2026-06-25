@@ -51,14 +51,17 @@ this matters more than it sounds like it should).
 3. **Add a changelog file** at `fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`
    (plain text, one or a few sentences — F-Droid and other fastlane-style stores display this
    verbatim).
-4. **Verify the build compiles** (see "JDK requirement" below) before committing.
-5. **Commit on `develop`**, merge to `master`, tag, push all three in one go:
+4. **Add an entry to `CHANGELOG.md`** at the repo root — same content as steps 2/3, headed
+   `## <versionName> - <YYYY-MM-DD>` (today's date), inserted above the previous entry.
+5. **Verify the build compiles** (see "JDK requirement" below) before committing.
+6. **Commit on `develop`**, merge to `master`, tag, push all three in one go:
 
 ```bash
 git checkout develop
 git add app/build.gradle.kts \
         app/src/main/java/com/manichord/mgit/whatsnew/WhatsNewContent.kt \
-        fastlane/metadata/android/en-US/changelogs/<versionCode>.txt
+        fastlane/metadata/android/en-US/changelogs/<versionCode>.txt \
+        CHANGELOG.md
 git commit -m "chore: bump version to v<versionName>"
 git checkout master
 git merge --no-ff develop -m "Merge branch 'develop' into master: v<versionName>"
@@ -66,7 +69,7 @@ git tag -a v<versionName> -m "v<versionName>"
 git push origin develop master v<versionName>
 ```
 
-6. **Confirm both branches match** after pushing — `git log --oneline -1 develop` and
+7. **Confirm both branches match** after pushing — `git log --oneline -1 develop` and
    `master` should show the same `versionCode`/`versionName` in `app/build.gradle.kts`. This is
    exactly the check that catches the drift bug described below.
 
