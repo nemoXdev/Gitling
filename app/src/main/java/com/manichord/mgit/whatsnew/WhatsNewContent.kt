@@ -13,6 +13,14 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 35,
+            versionName = "1.0.35",
+            highlights = listOf(
+                "Fixed bright splash screen flash on cold launch in dark mode",
+                "Added monochrome icon for themed home screens on Android 13+"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 34,
             versionName = "1.0.34",
             highlights = listOf(
