@@ -13,6 +13,14 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 36,
+            versionName = "1.0.36",
+            highlights = listOf(
+                "Added Submodule Update action — init and update submodules from the repo drawer",
+                "Fixed Clone recursively checkbox not toggling visually"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 35,
             versionName = "1.0.35",
             highlights = listOf(
