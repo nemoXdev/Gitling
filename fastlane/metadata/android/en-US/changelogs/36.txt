@@ -1,0 +1,1 @@
+Added Submodule Update action to the repo drawer — init and update submodules in already-cloned repos. Fixed the Clone recursively checkbox not toggling visually.
