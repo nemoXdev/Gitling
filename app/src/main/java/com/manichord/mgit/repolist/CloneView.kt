@@ -37,7 +37,7 @@ fun CloneView(
     var remoteUrl by remember(viewModel.remoteUrl) { mutableStateOf(viewModel.remoteUrl) }
     val localRepoName by viewModel.localRepoName.observeAsState("")
     val initLocal by viewModel.initLocal.observeAsState(false)
-    val cloneRecursively by remember { mutableStateOf(viewModel.cloneRecursively) }
+    var cloneRecursively by remember { mutableStateOf(viewModel.cloneRecursively) }
 
     val remoteUrlError by viewModel.remoteUrlError.observeAsState()
     val localRepoNameError by viewModel.localRepoNameError.observeAsState()
@@ -187,7 +187,7 @@ fun CloneView(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Checkbox(
                             checked = cloneRecursively,
-                            onCheckedChange = { viewModel.cloneRecursively = it }
+                            onCheckedChange = { cloneRecursively = it; viewModel.cloneRecursively = it }
                         )
                         Text(
                             text = stringResource(id = R.string.dialog_clone_recursive),
