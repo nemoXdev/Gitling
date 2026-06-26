@@ -290,7 +290,8 @@ fun RepoOperationList(onOperationClick: (index: Int) -> Unit) {
         "Remove Remote" to Icons.Default.LinkOff,
         "Delete" to Icons.Default.Delete,
         "Raw Config" to Icons.Default.Code,
-        "Options" to Icons.Default.Settings
+        "Options" to Icons.Default.Settings,
+        "Submodule Update" to Icons.Default.AccountTree
     )
 
     Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
