@@ -5,6 +5,10 @@ in-app "What's New" history (`app/src/main/java/com/manichord/mgit/whatsnew/What
 and the per-release notes under `fastlane/metadata/android/en-US/changelogs/`; update this file
 as part of cutting each release (see `docs/agents/release-process.md`).
 
+## 1.0.37 - 2026-06-29
+- Fixed clone crash on Android 12 (API 31) — JGit now works correctly on all supported Android versions
+- Clone button is now always reachable by scrolling the clone sheet
+
 ## 1.0.36 - 2026-06-26
 - Added Submodule Update action to the repo drawer — init and update submodules in already-cloned repos
 - Fixed Clone recursively checkbox not toggling visually
