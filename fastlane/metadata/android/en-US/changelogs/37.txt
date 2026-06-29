@@ -1,0 +1,1 @@
+Fixed clone crash on Android 12 (API 31) — JGit now works correctly on all supported Android versions. Clone button is now always reachable by scrolling the clone sheet.

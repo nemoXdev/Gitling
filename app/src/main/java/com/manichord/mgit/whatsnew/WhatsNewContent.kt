@@ -13,6 +13,14 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 37,
+            versionName = "1.0.37",
+            highlights = listOf(
+                "Fixed clone crash on Android 12 — JGit now works on API 31+",
+                "Clone button now always reachable by scrolling the clone sheet"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 36,
             versionName = "1.0.36",
             highlights = listOf(
