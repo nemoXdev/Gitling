@@ -1,0 +1,1 @@
+Redesigned home screen widget — each repo now shows its branch name, last commit message, and a status indicator (clean vs. dirty). No more GITLING header, just the repo list.
