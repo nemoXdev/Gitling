@@ -91,11 +91,20 @@
       <div class="features-grid">
         <div class="feature-item"><span class="check">✓</span><span>Clone, create, and delete local repositories</span></div>
         <div class="feature-item"><span class="check">✓</span><span>One-tap Connect with GitHub (OAuth Device Flow) — no manual token/password handling for GitHub remotes</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Self-hosted Forgejo and Gitea support — add a Custom account with your instance URL</span></div>
         <div class="feature-item"><span class="check">✓</span><span>HTTP/HTTPS/SSH, including SSH with private-key passphrase</span></div>
         <div class="feature-item"><span class="check">✓</span><span>Username/password and personal access token authentication for any Git host</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Full branch/merge commit graph with lazygit-style lane visualization and inline branch/tag/HEAD labels</span></div>
         <div class="feature-item"><span class="check">✓</span><span>Browse files and commit history, <code>git diff</code> between commits</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>File blame view — see which commit last touched each line</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Git command console — run <code>status</code>, <code>log</code>, <code>diff</code>, <code>branch</code>, <code>stash</code> directly from the Console tab</span></div>
         <div class="feature-item"><span class="check">✓</span><span>Checkout, create, and merge local/remote branches and tags</span></div>
         <div class="feature-item"><span class="check">✓</span><span><code>git status</code>, staging, <code>git rebase</code>, <code>git cherry-pick</code>, <code>git checkout &lt;file&gt;</code></span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Stage All / Unstage All — bulk-stage or unstage every file from the Status screen in one tap</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Submodule init and update</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Search across repos, commit history, and file tree</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Pin repositories and tag them with custom labels — filter by label from the repo list</span></div>
+        <div class="feature-item"><span class="check">✓</span><span>Home screen widget showing repo status and dirty/clean indicator</span></div>
         <div class="feature-item"><span class="check">✓</span><span>Private key generation and management</span></div>
         <div class="feature-item"><span class="check">✓</span><span>Import an existing repository from device storage</span></div>
         <div class="feature-item"><span class="check">✓</span><span>Light/dark mode that follows the system, with a choice between a fixed brand color or wallpaper-based Material You dynamic color</span></div>
@@ -114,20 +123,32 @@
           <figcaption>Repository list</figcaption>
         </figure>
         <figure class="screenshot-card">
-          <a href="assets/screenshots/commit_graph.png"><img src="assets/screenshots/commit_graph.png" alt="Full branch/merge commit graph" loading="lazy"></a>
-          <figcaption>Full branch/merge commit graph</figcaption>
+          <a href="assets/screenshots/commit_graph.png"><img src="assets/screenshots/commit_graph.png" alt="Commit graph with branch labels" loading="lazy"></a>
+          <figcaption>Commit graph</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/console_tab.png"><img src="assets/screenshots/console_tab.png" alt="Git command console" loading="lazy"></a>
+          <figcaption>Git console</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/status_screen.png"><img src="assets/screenshots/status_screen.png" alt="Status screen with stage all and unstage all" loading="lazy"></a>
+          <figcaption>Status — stage/unstage all</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/file_viewer.png"><img src="assets/screenshots/file_viewer.png" alt="File viewer with syntax highlighting" loading="lazy"></a>
+          <figcaption>File viewer</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/file_blame.png"><img src="assets/screenshots/file_blame.png" alt="Blame view" loading="lazy"></a>
+          <figcaption>Blame view</figcaption>
+        </figure>
+        <figure class="screenshot-card">
+          <a href="assets/screenshots/commit_diff.png"><img src="assets/screenshots/commit_diff.png" alt="Commit diff view" loading="lazy"></a>
+          <figcaption>Commit diff</figcaption>
         </figure>
         <figure class="screenshot-card">
           <a href="assets/screenshots/settings.png"><img src="assets/screenshots/settings.png" alt="Settings" loading="lazy"></a>
           <figcaption>Settings</figcaption>
-        </figure>
-        <figure class="screenshot-card">
-          <a href="assets/screenshots/file_viewer.png"><img src="assets/screenshots/file_viewer.png" alt="File viewer with syntax highlighting" loading="lazy"></a>
-          <figcaption>File viewer with syntax highlighting</figcaption>
-        </figure>
-        <figure class="screenshot-card">
-          <a href="assets/screenshots/commit_diff.png"><img src="assets/screenshots/commit_diff.png" alt="Commit diff view" loading="lazy"></a>
-          <figcaption>Commit diff view</figcaption>
         </figure>
       </div>
     </div>
@@ -152,6 +173,14 @@
         <li>Tap the <code>+</code> button to add a new repository</li>
         <li>Choose <code>Init Local</code> to create a local repository</li>
         <li>Enter a name when prompted</li>
+      </ol>
+
+      <h3>Self-hosted Forgejo / Gitea</h3>
+      <ol>
+        <li>Go to <strong>Settings → Accounts</strong> and tap <strong>Add account</strong></li>
+        <li>Choose <strong>Custom</strong> as the account type</li>
+        <li>Enter your username, a personal access token, and your instance URL (e.g. <code>https://forgejo.example.com</code>)</li>
+        <li>Credentials are applied automatically on clone, fetch, and pull from that host</li>
       </ol>
 
       <h3>URL formats</h3>
