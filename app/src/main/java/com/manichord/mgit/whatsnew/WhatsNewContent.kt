@@ -13,6 +13,13 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 47,
+            versionName = "1.0.47",
+            highlights = listOf(
+                "Stage All and Unstage All on the Status screen — bulk-stage or unstage every file in one tap instead of going one by one"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 46,
             versionName = "1.0.46",
             highlights = listOf(

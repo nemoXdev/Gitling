@@ -1,0 +1,1 @@
+Stage All and Unstage All buttons on the Status screen — bulk-stage or unstage every file in one tap instead of going one by one.
