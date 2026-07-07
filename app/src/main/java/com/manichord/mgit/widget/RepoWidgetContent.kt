@@ -30,7 +30,7 @@ import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import com.manichord.mgit.R
+import me.sheimi.sgit.R
 
 @Composable
 @GlanceComposable
@@ -39,6 +39,7 @@ fun RepoWidgetContent(repos: List<RepoWidgetEntry>) {
         Scaffold(
             titleBar = {
                 TitleBar(
+                    startIcon = ImageProvider(R.drawable.ic_logo),
                     title = "Gitling",
                     actions = {
                         CircleIconButton(
