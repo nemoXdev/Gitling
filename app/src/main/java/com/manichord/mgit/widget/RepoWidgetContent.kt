@@ -39,7 +39,7 @@ fun RepoWidgetContent(repos: List<RepoWidgetEntry>) {
         Scaffold(
             titleBar = {
                 TitleBar(
-                    startIcon = ImageProvider(R.drawable.ic_logo),
+                    startIcon = ImageProvider(R.drawable.ic_launcher_foreground),
                     title = "Gitling",
                     actions = {
                         CircleIconButton(
