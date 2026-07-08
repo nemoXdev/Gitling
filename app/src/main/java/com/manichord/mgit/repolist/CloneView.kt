@@ -47,6 +47,7 @@ fun CloneView(
     Column(
         modifier = modifier
             .fillMaxWidth()
+            .imePadding()
             .verticalScroll(rememberScrollState())
             .padding(24.dp)
             .padding(bottom = 32.dp)
