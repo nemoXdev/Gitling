@@ -1,0 +1,1 @@
+Fixed the widget's refresh button crowding the top-right corner, and fixed the keyboard covering the Remote URL and Local Path fields when cloning a repository.
