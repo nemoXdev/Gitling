@@ -42,12 +42,16 @@ fun RepoWidgetContent(repos: List<RepoWidgetEntry>) {
                     startIcon = ImageProvider(R.drawable.ic_launcher_foreground),
                     title = "Gitling",
                     actions = {
-                        CircleIconButton(
-                            imageProvider = ImageProvider(R.drawable.ic_sync),
-                            contentDescription = "Refresh",
-                            onClick = actionRunCallback<RefreshWidgetAction>(),
-                            modifier = GlanceModifier.padding(end = 4.dp, top = 4.dp)
-                        )
+                        // Padding must go on a wrapping Box, not CircleIconButton's own
+                        // modifier -- passed directly, it shifts only the icon glyph inside
+                        // the button, not the visible circular background.
+                        Box(modifier = GlanceModifier.padding(end = 8.dp)) {
+                            CircleIconButton(
+                                imageProvider = ImageProvider(R.drawable.ic_sync),
+                                contentDescription = "Refresh",
+                                onClick = actionRunCallback<RefreshWidgetAction>()
+                            )
+                        }
                     }
                 )
             }
