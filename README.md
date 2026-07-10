@@ -7,6 +7,7 @@
 <p align="center">
   <a href="https://github.com/maneeshacooray/Gitling/releases/latest"><img src="https://img.shields.io/github/v/release/maneeshacooray/Gitling?label=GitHub%20release" alt="Latest GitHub release"></a>
   <a href="https://f-droid.org/packages/com.maneeshacooray.gitling/"><img src="https://img.shields.io/f-droid/v/com.maneeshacooray.gitling" alt="F-Droid version"></a>
+  <a href="https://play.google.com/store/apps/details?id=com.maneeshacooray.gitling"><img src="https://img.shields.io/badge/Google%20Play-available-blue?logo=google-play" alt="Available on Google Play"></a>
   <a href="./LICENSE"><img src="https://img.shields.io/github/license/maneeshacooray/Gitling" alt="License: GPLv3"></a>
 </p>
 
