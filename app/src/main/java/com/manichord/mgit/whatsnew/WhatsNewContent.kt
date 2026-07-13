@@ -13,6 +13,16 @@ data class WhatsNewEntry(
 object WhatsNewContent {
     val entries = listOf(
         WhatsNewEntry(
+            versionCode = 52,
+            versionName = "1.0.52",
+            highlights = listOf(
+                "Fixed a crash when tapping Clone or Init before typing a repository name",
+                "Fixed a crash generating a DSA SSH key with the default key length",
+                "Fixed a rare crash pulling right after the app restarts",
+                "The Clone/Init sheet now shows validation errors instead of closing silently"
+            )
+        ),
+        WhatsNewEntry(
             versionCode = 51,
             versionName = "1.0.51",
             highlights = listOf(

@@ -1,0 +1,1 @@
+Fixed several crash reports: cloning/initializing with no name typed yet, generating a DSA SSH key at the default length, and a rare crash pulling right after the app restarts. The Clone/Init sheet also now shows validation errors instead of closing silently.
