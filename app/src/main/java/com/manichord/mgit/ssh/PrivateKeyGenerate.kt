@@ -110,6 +110,9 @@ class PrivateKeyGenerate : SheimiDialogFragment() {
                                     size > 16384 -> {
                                         errorRes = R.string.alert_too_long_key_size
                                     }
+                                    isDsa && size !in setOf(1024, 2048, 3072) -> {
+                                        errorRes = R.string.alert_dsa_key_size
+                                    }
                                     File(PrivateKeyUtils.getPrivateKeyFolder(), newFilename).exists() -> {
                                         errorRes = R.string.alert_key_exists
                                     }
