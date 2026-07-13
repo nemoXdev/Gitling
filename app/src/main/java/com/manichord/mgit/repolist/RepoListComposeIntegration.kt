@@ -41,7 +41,7 @@ fun RepoListComposeContent(
     activity: SheimiFragmentActivity,
     cloneViewModel: CloneViewModel,
     viewModel: RepoListViewModel,
-    onCloneClick: () -> Unit,
+    onCloneClick: () -> Boolean,
     onCancelCloneViewClick: () -> Unit
 ) {
     AppTheme {
@@ -135,8 +135,9 @@ fun RepoListComposeContent(
                 CloneView(
                     viewModel = cloneViewModel,
                     onCloneClick = {
-                        showCloneSheet = false
-                        onCloneClick()
+                        if (onCloneClick()) {
+                            showCloneSheet = false
+                        }
                     },
                     onCancelClick = {
                         showCloneSheet = false

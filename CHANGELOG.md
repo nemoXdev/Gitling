@@ -5,6 +5,12 @@ in-app "What's New" history (`app/src/main/java/com/manichord/mgit/whatsnew/What
 and the per-release notes under `fastlane/metadata/android/en-US/changelogs/`; update this file
 as part of cutting each release (see `docs/agents/release-process.md`).
 
+## 1.0.52 - 2026-07-13
+- Fixed a crash when tapping Clone or Init before typing a repository name.
+- Fixed a crash generating a DSA SSH key with the default key length.
+- Fixed a rare crash pulling right after the app restarts.
+- The Clone/Init sheet now shows validation errors instead of closing silently.
+
 ## 1.0.51 - 2026-07-10
 - Properly fixed the widget's refresh button crowding the top-right corner — the 1.0.50 fix didn't actually move it.
 

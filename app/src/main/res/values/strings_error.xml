@@ -28,6 +28,7 @@
     <!-- alerts -->
     <string name="alert_too_short_key_size">Keylength is too small (at least 1024 bits for RSA and DSA)</string>
     <string name="alert_too_long_key_size">Keylength is too large</string>
+    <string name="alert_dsa_key_size">DSA only supports key lengths of 1024, 2048, or 3072 bits</string>
     <string name="alert_key_exists">Key already exists</string>
     <string name="alert_field_not_empty">Field should not be empty</string>
     <string name="alert_remoteurl_required">Remote URL required</string>
