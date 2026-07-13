@@ -614,11 +614,13 @@ class MainActivity : SheimiFragmentActivity() {
         Timber.i("Installed custom HTTPS factory")
     }
 
-    private fun cloneRepo() {
-        if (cloneViewModel.validate()) {
+    private fun cloneRepo(): Boolean {
+        val valid = cloneViewModel.validate()
+        if (valid) {
             hideCloneView()
             cloneViewModel.cloneRepo()
         }
+        return valid
     }
 
     private fun showCloneView() {
