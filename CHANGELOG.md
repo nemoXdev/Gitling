@@ -5,6 +5,9 @@ in-app "What's New" history (`app/src/main/java/com/manichord/mgit/whatsnew/What
 and the per-release notes under `fastlane/metadata/android/en-US/changelogs/`; update this file
 as part of cutting each release (see `docs/agents/release-process.md`).
 
+## 1.0.54 - 2026-07-20
+- Fixed a crash opening or initializing a repository on Android 12 and older (a gap in JGit's compatibility patch for newer InputStream APIs missing on those versions).
+
 ## 1.0.53 - 2026-07-19
 - Fixed several rare crashes when reopening a dialog (merge, push, rebase, remove remote, checkout, and file operations) right after the app restarts.
 - Fixed a crash showing an error dialog if the app was backgrounded while a clone, pull, or push was still running.
